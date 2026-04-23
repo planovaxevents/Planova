@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PLANOVA – Tickets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+      position: relative;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: brightness(0.35) blur(4px);
+      z-index: -2;
+      transition: background-image 0.4s ease-in-out;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: -1;
+    }
+
+    .ticket-wrapper {
+      max-width: 900px;
+      margin: 120px auto;
+      padding: 20px;
+    }
+
+    .ticket-card {
+      background: rgba(20,20,20,0.65);
+      backdrop-filter: blur(12px);
+      padding: 35px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,136,0.4);
+      box-shadow: 0 0 25px rgba(0,255,136,0.15);
+      margin-bottom: 25px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ticket-option {
+      background: rgba(0,0,0,0.4);
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,255,136,0.35);
+      margin: 15px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.2s;
+    }
+
+    .ticket-option:hover {
+      border-color: #00ff88;
+      background: rgba(0,0,0,0.55);
+    }
+
+    .ticket-option select {
+      padding: 10px;
+      border-radius: 8px;
+      background: #111;
+      color: white;
+      border: 1px solid #00ff88;
+    }
+
+    .summary-box {
+      margin-top: 25px;
+      padding: 20px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(0,255,136,0.35);
+      border-radius: 12px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .summary-box strong {
+      color: #00ff88;
+    }
+
+    .btn-primary {
+      margin-top: 25px;
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #00ff88, #00cc6a);
+      border: none;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 15px #00ff88;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">●</span> PLANOVA
+    </a>
+  </div>
+  <div class="nav-right"></div>
+</header>
+
+<div class="ticket-wrapper">
+
+  <div class="ticket-card">
+    <h2 id="ticket-event-title">Event Tickets</h2>
+    <p id="ticket-event-meta" style="opacity:0.8; margin-bottom:25px;"></p>
+
+    <div class="ticket-option">
+      <div>
+        <strong>Standard Ticket</strong>
+        <p style="opacity:0.7;">General admission</p>
+      </div>
+      <select id="standard-count"></select>
+    </div>
+
+    <div class="ticket-option">
+      <div>
+        <strong>VIP Ticket</strong>
+        <p style="opacity:0.7;">Priority entry + VIP area</p>
+      </div>
+      <select id="vip-count"></select>
+    </div>
+
+    <div class="summary-box" id="summary-box">
+      <strong>Total:</strong> £0  
+      <br>
+      <span id="summary-details">No tickets selected.</span>
+    </div>
+
+    <button class="btn-primary" id="checkout-btn">Checkout</button>
+  </div>
+
+</div>
+
+<script>
+  const eventData = JSON.parse(localStorage.getItem("selected_event"));
+
+  if (eventData) {
+    document.getElementById("ticket-event-title").textContent = eventData.title;
+    document.getElementById("ticket-event-meta").textContent =
+      `${eventData.dateLabel} • ${eventData.time} • ${eventData.location}`;
+
+    document.body.style.backgroundImage = `url('${eventData.image}')`;
+
+    const base = eventData.price;
+
+    document.getElementById("standard-count").innerHTML = `
+      <option value="0">0</option>
+      <option value="1">1 (£${base})</option>
+      <option value="2">2 (£${base * 2})</option>
+      <option value="3">3 (£${base * 3})</option>
+    `;
+
+    document.getElementById("vip-count").innerHTML = `
+      <option value="0">0</option>
+      <option value="1">1 (£${base * 2})</option>
+      <option value="2">2 (£${base * 4})</option>
+      <option value="3">3 (£${base * 6})</option>
+    `;
+  }
+
+  function updateSummary() {
+    const standard = parseInt(document.getElementById("standard-count").value);
+    const vip = parseInt(document.getElementById("vip-count").value);
+    const base = eventData.price;
+
+    const total = (standard * base) + (vip * base * 2);
+
+    document.getElementById("summary-box").innerHTML = `
+      <strong>Total:</strong> £${total}
+      <br>
+      <span>${standard} Standard, ${vip} VIP</span>
+    `;
+  }
+
+  document.getElementById("standard-count").onchange = updateSummary;
+  document.getElementById("vip-count").onchange = updateSummary;
+
+  // ⭐ NEW: Redirect to checkout.html with Option C data
+  document.getElementById("checkout-btn").onclick = () => {
+    const standard = parseInt(document.getElementById("standard-count").value);
+    const vip = parseInt(document.getElementById("vip-count").value);
+
+    if (standard === 0 && vip === 0) {
+      alert("Please select at least one ticket.");
+      return;
+    }
+
+    // Save Stripe-ready payload
+    localStorage.setItem("pending_checkout", JSON.stringify({
+      event_id: eventData.id,
+      standard,
+      vip
+    }));
+
+    // Redirect to checkout
+    window.location.href = "checkout.html";
+  };
+</script>
+
+</body>
+</html>

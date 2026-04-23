@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PLANOVA – Checkout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.35) blur(4px);
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: -1;
+    }
+
+    .checkout-wrapper {
+      max-width: 800px;
+      margin: 120px auto;
+      padding: 20px;
+    }
+
+    .checkout-card {
+      background: rgba(20,20,20,0.75);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      border: 1px solid rgba(0,255,136,0.4);
+      box-shadow: 0 0 25px rgba(0,255,136,0.15);
+      padding: 30px;
+    }
+
+    .checkout-card h1 {
+      margin-top: 0;
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .checkout-meta {
+      opacity: 0.8;
+      margin-bottom: 25px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+    }
+
+    .summary-row.total {
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .btn-primary {
+      margin-top: 25px;
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #00ff88, #00cc6a);
+      border: none;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 15px #00ff88;
+    }
+
+    .error-msg {
+      margin-top: 15px;
+      color: #ff6b6b;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">●</span> PLANOVA
+    </a>
+  </div>
+  <div class="nav-right"></div>
+</header>
+
+<div class="checkout-wrapper">
+  <div class="checkout-card">
+    <h1 id="checkout-title">Checkout</h1>
+    <p id="checkout-meta" class="checkout-meta"></p>
+
+    <div id="summary">
+      <div class="summary-row">
+        <span>Standard tickets</span>
+        <span id="summary-standard">0</span>
+      </div>
+      <div class="summary-row">
+        <span>VIP tickets</span>
+        <span id="summary-vip">0</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <span id="summary-total">£0</span>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="pay-btn">Pay with card</button>
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+</div>
+
+<!-- Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+  // 🔑 Replace with your real Stripe publishable key
+  const STRIPE_PUBLISHABLE_KEY = "pk_live_51TPW2PKZHIDdJCsDPK38iecJJk1m2k0u7nuJFjj88QqD58NdqmUDegA7EttLE3IFUZyQRnwxjCME9SZeFMv5vuLB00mmt69Ehc";
+
+  const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+
+  const eventData = JSON.parse(localStorage.getItem("selected_event") || "null");
+  const pending = JSON.parse(localStorage.getItem("pending_checkout") || "null");
+
+  if (!eventData || !pending) {
+    document.getElementById("checkout-title").textContent = "No tickets in checkout";
+    document.getElementById("summary").style.display = "none";
+    document.getElementById("pay-btn").style.display = "none";
+  } else {
+    // Background
+    document.body.style.backgroundImage = `url('${eventData.image}')`;
+
+    // Text
+    document.getElementById("checkout-title").textContent = eventData.title;
+    document.getElementById("checkout-meta").textContent =
+      `${eventData.dateLabel} • ${eventData.time} • ${eventData.location}`;
+
+    const base = eventData.price;
+    const standard = pending.standard || 0;
+    const vip = pending.vip || 0;
+    const total = (standard * base) + (vip * base * 2);
+
+    document.getElementById("summary-standard").textContent = `${standard}`;
+    document.getElementById("summary-vip").textContent = `${vip}`;
+    document.getElementById("summary-total").textContent = `£${total}`;
+  }
+
+  document.getElementById("pay-btn").onclick = async () => {
+    const errorEl = document.getElementById("error-msg");
+    errorEl.style.display = "none";
+    errorEl.textContent = "";
+
+    if (!eventData || !pending) {
+      errorEl.textContent = "No tickets to checkout.";
+      errorEl.style.display = "block";
+      return;
+    }
+
+    try {
+      const res = await fetch("/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          event_id: eventData.id,
+          event_title: eventData.title,
+          standard: pending.standard,
+          vip: pending.vip,
+          price: eventData.price
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      const data = await res.json();
+
+      const result = await stripe.redirectToCheckout({
+        sessionId: data.sessionId
+      });
+
+      if (result.error) {
+        errorEl.textContent = result.error.message;
+        errorEl.style.display = "block";
+      }
+    } catch (err) {
+      errorEl.textContent = err.message || "Something went wrong starting checkout.";
+      errorEl.style.display = "block";
+    }
+  };
+</script>
+
+</body>
+</html>

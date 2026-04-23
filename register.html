@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PLANOVA – Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    /* Password strength bar */
+    .strength-bar {
+      width: 100%;
+      height: 8px;
+      background: #222;
+      border-radius: 5px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      background: red;
+      transition: 0.3s;
+    }
+
+    /* Password rules */
+    .password-rules {
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .password-rules span {
+      display: block;
+      color: #ff4d4d;
+    }
+
+    .password-rules span.valid {
+      color: #00ff88;
+    }
+
+    .terms {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 15px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">●</span> PLANOVA
+    </a>
+  </div>
+</header>
+
+<section class="auth-container">
+  <div class="auth-box">
+    <h2>Create an account</h2>
+    <p class="muted">Join PLANOVA to discover and manage events</p>
+
+    <form id="register-form">
+      <label>Full Name</label>
+      <input type="text" id="full_name" placeholder="John Smith" required />
+
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com" required />
+
+      <label>Password</label>
+      <div class="password-field">
+        <input type="password" id="password" placeholder="••••••••" required />
+        <button type="button" class="toggle-password">👁</button>
+      </div>
+
+      <!-- Strength bar -->
+      <div class="strength-bar">
+        <div class="strength-fill" id="strength-fill"></div>
+      </div>
+
+      <!-- Password rules -->
+      <div class="password-rules">
+        <span id="rule-length">• 12–60 characters</span>
+        <span id="rule-lower">• A lowercase letter</span>
+        <span id="rule-upper">• An uppercase letter</span>
+        <span id="rule-number">• A number OR special character</span>
+      </div>
+
+      <div class="terms">
+        By signing up you agree to Planova’s <a href="#">Terms & Conditions</a>
+      </div>
+
+      <button class="btn-primary full-width" type="submit" id="register-btn">
+        Register
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Already have an account? <a href="signin.html">Sign In</a>
+    </p>
+  </div>
+</section>
+
+<script>
+const passwordInput = document.getElementById("password");
+const strengthFill = document.getElementById("strength-fill");
+const registerBtn = document.getElementById("register-btn");
+
+// Rule elements
+const ruleLength = document.getElementById("rule-length");
+const ruleLower = document.getElementById("rule-lower");
+const ruleUpper = document.getElementById("rule-upper");
+const ruleNumber = document.getElementById("rule-number");
+
+function validatePassword() {
+  const pwd = passwordInput.value;
+
+  // Rules
+  const hasLength = pwd.length >= 12 && pwd.length <= 60;
+  const hasLower = /[a-z]/.test(pwd);
+  const hasUpper = /[A-Z]/.test(pwd);
+  const hasNumberOrSpecial = /[0-9!@#$%^&*(),.?":{}|<>]/.test(pwd);
+
+  // Update rule colours
+  ruleLength.classList.toggle("valid", hasLength);
+  ruleLower.classList.toggle("valid", hasLower);
+  ruleUpper.classList.toggle("valid", hasUpper);
+  ruleNumber.classList.toggle("valid", hasNumberOrSpecial);
+
+  // Strength score
+  let score = 0;
+  if (hasLength) score++;
+  if (hasLower) score++;
+  if (hasUpper) score++;
+  if (hasNumberOrSpecial) score++;
+
+  // Update strength bar
+  const percent = (score / 4) * 100;
+  strengthFill.style.width = percent + "%";
+
+  if (score === 1) strengthFill.style.background = "red";
+  if (score === 2) strengthFill.style.background = "orange";
+  if (score === 3) strengthFill.style.background = "#ffcc00";
+  if (score === 4) strengthFill.style.background = "#00ff88";
+
+  // Disable register button until all rules pass
+  registerBtn.disabled = score !== 4;
+}
+
+passwordInput.addEventListener("input", validatePassword);
+
+// Submit handler
+document.getElementById("register-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (registerBtn.disabled) {
+      alert("Your password does not meet the required rules.");
+      return;
+    }
+
+    const full_name = document.getElementById("full_name").value;
+    const email = document.getElementById("email").value;
+    const password = passwordInput.value;
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ full_name, email, password })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem("planova_user", JSON.stringify({
+                name: full_name,
+                email: email
+            }));
+
+            window.location.href = "index.html";
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Unable to connect to server. Make sure your backend is running.");
+    }
+});
+
+// Password toggle
+document.querySelectorAll(".toggle-password").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const input = btn.previousElementSibling;
+    input.type = input.type === "password" ? "text" : "password";
+  });
+});
+</script>
+
+<script src="auth.js"></script>
+
+</body>
+</html>

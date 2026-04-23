@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PLANOVA – Event</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="nav">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">●</span>
+        PLANOVA
+      </a>
+    </div>
+    <div class="nav-right">
+      <a href="signin.html" class="btn-outline">Sign In</a>
+      <a href="register.html" class="btn-primary">Register</a>
+    </div>
+  </header>
+
+  <main class="event-main">
+    <section class="event-hero">
+      <img id="event-image" />
+      <div class="event-hero-overlay">
+        <span class="badge" id="event-category"></span>
+        <h1 id="event-title"></h1>
+        <p id="event-meta"></p>
+      </div>
+    </section>
+
+    <!-- EXISTING TICKET MODAL -->
+    <div class="modal" id="ticket-modal">
+      <div class="modal-content">
+        <h3>Get Tickets</h3>
+        <p>Select your ticket type:</p>
+
+        <button class="btn-primary full-width" id="get-tickets-btn-2"></button>
+
+        <button id="close-modal" class="btn-ghost full-width">Close</button>
+      </div>
+    </div>
+
+    <section class="event-layout">
+      <div class="event-content">
+        <h2>About this event</h2>
+        <p id="event-description"></p>
+      </div>
+
+      <aside class="event-sidebar">
+        <div class="event-card">
+          <h3>Tickets</h3>
+          <p class="price" id="event-price"></p>
+
+          <button class="btn-primary full-width" id="get-tickets-btn"></button>
+
+        </div>
+      </aside>
+    </section>
+  </main>
+
+<script src="auth.js"></script>
+<script src="script.js"></script>
+
+<!-- ⭐ SIMPLE LOGIN-BASED BUTTON LOGIC -->
+<script>
+  function setupTicketButton(id) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+
+    const user = JSON.parse(localStorage.getItem("planova_user"));
+
+    if (!user) {
+      // User NOT logged in
+      btn.textContent = "Create or Sign in to an Account First!";
+      btn.style.opacity = "0.6";
+      btn.style.cursor = "not-allowed";
+      btn.disabled = true;
+    } else {
+      // User IS logged in
+      btn.textContent = "Get tickets";
+      btn.disabled = false;
+      btn.style.opacity = "1";
+      btn.style.cursor = "pointer";
+
+      btn.addEventListener("click", () => {
+        window.location.href = "gettickets.html";
+      });
+    }
+  }
+
+  setupTicketButton("get-tickets-btn");
+  setupTicketButton("get-tickets-btn-2");
+</script>
+<footer class="footer">
+  <div class="footer-inner">
+
+    <div class="footer-col">
+      <h3 class="footer-title">PLANOVA</h3>
+    </div>
+
+    <div class="footer-col">
+      <a href="/index.html#discover">Discover</a>
+      <a href="account.html">Account</a>
+      <a href="#">FAQs</a>
+      <a href="#">Privacy & Terms</a>
+    </div>
+
+    <div class="footer-col">
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#">TikTok</a>
+      <a href="#">Help</a>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 PLANOVA. All rights reserved.
+  </div>
+</footer>
+</body>
+</html>
