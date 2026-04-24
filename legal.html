@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PLANOVA – Legal Information</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #e5e5e5;
+      font-family: Arial, sans-serif;
+      line-height: 1.7;
+    }
+
+    .legal-wrapper {
+      max-width: 1000px;
+      margin: 120px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #00ff88;
+      margin-bottom: 20px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid rgba(0,255,136,0.25);
+      padding-bottom: 10px;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      cursor: pointer;
+      border-radius: 8px;
+      background: rgba(20,20,20,0.5);
+      border: 1px solid rgba(0,255,136,0.25);
+      transition: 0.25s;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      background: #00ff88;
+      color: #000;
+      border-color: #00ff88;
+    }
+
+    .tab:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Content sections */
+    .section {
+      display: none;
+      background: rgba(20,20,20,0.6);
+      border: 1px solid rgba(0,255,136,0.25);
+      padding: 25px;
+      border-radius: 14px;
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.4s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    h2 {
+      color: #00ff88;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      color: #00ff88;
+      margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    a {
+      color: #00ff88;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="nav-left">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">●</span> PLANOVA
+    </a>
+  </div>
+</header>
+
+<div class="legal-wrapper">
+
+  <h1>Legal Information</h1>
+  <p style="opacity:0.8;">Last updated: April 2026</p>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="about">About Us</div>
+    <div class="tab" data-tab="terms">Terms & Conditions</div>
+    <div class="tab" data-tab="privacy">Privacy Policy</div>
+    <div class="tab" data-tab="refunds">Refund Policy</div>
+    <div class="tab" data-tab="cookies">Cookie Policy</div>
+    <div class="tab" data-tab="deletion">Data Deletion Request</div>
+    <div class="tab" data-tab="security">Security Statement</div>
+    <div class="tab" data-tab="organiser">Event Organiser Agreement</div>
+    <div class="tab" data-tab="ticketing">Ticketing Policy</div>
+  </div>
+
+  <!-- ABOUT US -->
+  <div class="section active" id="about">
+    <h2>About Planova</h2>
+    <p>
+      Planova is a modern event discovery and ticketing platform designed to help people find 
+      club nights, concerts, festivals, and student events with ease. Our mission is to make 
+      nightlife and entertainment more accessible, transparent, and enjoyable for everyone.
+    </p>
+    <p>
+      We work closely with event organisers to ensure accurate listings, secure ticketing, 
+      and a seamless experience from browsing to checkout. Planova is built with a focus on 
+      speed, simplicity, and user trust.
+    </p>
+    <p>
+      For support, contact us at:<br>
+      <a href="mailto:support@planova.com">support@planova.com</a>
+    </p>
+  </div>
+
+  <!-- TERMS -->
+  <div class="section" id="terms">
+    <h2>Terms & Conditions</h2>
+
+    <h3>1. Acceptance of Terms</h3>
+    <p>
+      By creating an account or using Planova, you agree to be bound by these Terms & Conditions.
+      If you do not agree, you must discontinue use of the platform immediately.
+      Planova reserves the right to update or modify these terms at any time. Continued use of the platform constitutes acceptance of any changes.
+    </p>
+
+    <h3>2. Eligibility</h3>
+    <p>
+      To use Planova, you must be at least 16 years old, provide accurate and truthful information,
+      and not be prohibited from using online services under applicable laws.
+      Planova may suspend or terminate accounts that violate these requirements.
+    </p>
+
+    <h3>3. User Responsibilities</h3>
+    <p>
+      You agree to use Planova lawfully and respectfully, not attempt to hack or disrupt the platform,
+      not create fraudulent accounts, not impersonate others, and not purchase tickets using stolen information.
+      Any misuse may result in account termination and potential legal action.
+    </p>
+
+    <h3>4. Event Listings</h3>
+    <p>
+      Event organisers are solely responsible for the accuracy of their listings.
+      Planova acts as a discovery and ticketing service and is not the host of the events displayed on the platform.
+    </p>
+
+    <h3>5. Ticket Purchases</h3>
+    <p>
+      When purchasing a ticket through Planova, you enter a binding agreement with the event organiser.
+      Ticket availability is not guaranteed until payment is confirmed.
+      Tickets may be digital and must be presented at the event. Resale or duplication is prohibited unless allowed by the organiser.
+    </p>
+
+    <h3>6. Payments</h3>
+    <p>
+      All payments are processed securely through Stripe. Planova does not store or handle your card details.
+      Stripe may perform fraud checks or payment verification. You must ensure your payment information is accurate and authorised.
+    </p>
+
+    <h3>7. Refunds</h3>
+    <p>
+      Refunds are governed by the event organiser’s refund policy. Planova does not issue refunds directly unless explicitly stated.
+      If an event is cancelled or significantly changed, Planova will assist in communication but does not control refund decisions.
+    </p>
+
+    <h3>8. Account Security</h3>
+    <p>
+      You are responsible for maintaining the confidentiality of your login details.
+      We assure Planova will protect you and your data using secure authentication and modern encryption practices.
+    </p>
+
+    <h3>9. Platform Availability</h3>
+    <p>
+      Planova aims to provide uninterrupted access, but we cannot guarantee zero downtime or error‑free operation.
+      Planova is not liable for losses caused by temporary outages or technical issues.
+    </p>
+
+    <h3>10. Prohibited Activities</h3>
+    <p>
+      You may not use Planova for illegal activities, attempt to bypass ticket limits, upload harmful code,
+      or harass other users or organisers. Violations may result in immediate account termination.
+    </p>
+
+    <h3>11. Intellectual Property</h3>
+    <p>
+      All content on Planova — including branding, design, text, and code — is owned by Planova and protected by copyright.
+      You may not copy, redistribute, or create derivative works without permission.
+    </p>
+
+    <h3>12. Liability</h3>
+    <p>
+      Planova is not responsible for event cancellations, venue issues, organiser misconduct,
+      lost or stolen tickets, or damages resulting from event attendance. Your use of the platform is at your own risk.
+    </p>
+
+    <h3>13. Termination</h3>
+    <p>
+      Planova may suspend or terminate accounts that violate these terms or engage in harmful behaviour.
+      Users may delete their account at any time.
+    </p>
+
+    <h3>14. Governing Law</h3>
+    <p>
+      These Terms & Conditions are governed by the laws of the United Kingdom.
+      Any disputes will be handled under UK jurisdiction.
+    </p>
+
+    <h3>15. Contact</h3>
+    <p>
+      For questions regarding these terms, contact:<br>
+      <a href="mailto:support@planova.com">support@planova.com</a>
+    </p>
+  </div>
+
+  <!-- PRIVACY -->
+  <div class="section" id="privacy">
+    <h2>Privacy Policy</h2>
+
+<p>
+  Planova is committed to protecting your privacy and ensuring transparency in how your
+  information is collected, used, and safeguarded. This Privacy Policy explains what data
+  we collect, why we collect it, and how we keep it secure.
+</p>
+
+<h3>1. Information We Collect</h3>
+<p>Planova collects only the information necessary to operate the platform effectively:</p>
+
+<ul>
+  <li><strong>Account Information:</strong> Your name, email address, and password.</li>
+  <li><strong>Event Activity:</strong> Events you view, purchase, or interact with.</li>
+  <li><strong>Technical Data:</strong> Device type, browser version, IP address, and usage analytics.</li>
+  <li><strong>Payment Information:</strong> Processed securely by Stripe. Planova never stores card details.</li>
+  <li><strong>Support Communications:</strong> Messages you send to our support team.</li>
+</ul>
+
+<h3>2. How We Use Your Information</h3>
+<p>Your data is used to provide and improve the Planova experience:</p>
+
+<ul>
+  <li>To create and manage your account</li>
+  <li>To process ticket purchases securely</li>
+  <li>To personalise event recommendations</li>
+  <li>To improve platform performance and reliability</li>
+  <li>To detect and prevent fraud or misuse</li>
+  <li>To communicate important updates or event information</li>
+</ul>
+
+<h3>3. Sharing Your Information</h3>
+<p>Planova does not sell your data. We only share information when necessary:</p>
+
+<ul>
+  <li><strong>Stripe:</strong> For secure payment processing</li>
+  <li><strong>Event Organisers:</strong> Only when required for ticket validation or event entry</li>
+  <li><strong>Service Providers:</strong> For analytics, hosting, and security infrastructure</li>
+  <li><strong>Legal Requirements:</strong> If required by law or to protect user safety</li>
+</ul>
+
+<h3>4. Data Security</h3>
+<p>
+  We assure Planova will protect you and your data using industry‑standard encryption,
+  secure authentication, and modern cloud infrastructure. We continuously monitor for
+  vulnerabilities and apply security updates promptly.
+</p>
+
+<h3>5. Cookies & Tracking Technologies</h3>
+<p>
+  Planova uses cookies to enhance performance, remember your preferences, and analyse
+  platform usage. Cookies help us deliver a smoother and more personalised experience.
+</p>
+<p>
+  You may disable cookies in your browser settings, but some features may not function
+  correctly without them.
+</p>
+
+<h3>6. Your Rights</h3>
+<p>You have full control over your personal data. You may request to:</p>
+
+<ul>
+  <li>Access the information we hold about you</li>
+  <li>Update or correct your account details</li>
+  <li>Delete your account and associated data</li>
+  <li>Opt out of non‑essential communications</li>
+</ul>
+
+<p>
+  To exercise any of these rights, contact us at:
+  <a href="mailto:support@planova.com">support@planova.com</a>
+</p>
+
+<h3>7. Data Retention</h3>
+<p>
+  Planova retains your data only for as long as necessary to operate the platform or comply
+  with legal obligations. If you delete your account, your data is permanently removed from
+  our systems unless retention is required by law.
+</p>
+
+<h3>8. Third‑Party Services</h3>
+<p>
+  Planova integrates with trusted third‑party services such as Stripe and analytics
+  providers. These services follow their own privacy policies, and we ensure they meet
+  strict security and compliance standards.
+</p>
+
+<h3>9. Children’s Privacy</h3>
+<p>
+  Planova is not intended for children under 16. We do not knowingly collect personal
+  information from minors. If we become aware of such data, it will be deleted immediately.
+</p>
+
+<h3>10. International Data Transfers</h3>
+<p>
+  Depending on your location, your data may be processed in regions outside your country.
+  Planova ensures all transfers comply with applicable data protection laws and safeguards.
+</p>
+
+<h3>11. Changes to This Policy</h3>
+<p>
+  Planova may update this Privacy Policy to reflect improvements or legal requirements.
+  Significant changes will be communicated through the platform or via email.
+</p>
+
+<h3>12. Contact</h3>
+<p>
+  For questions about privacy or data protection, contact:<br>
+  <a href="mailto:support@planova.com">support@planova.com</a>
+</p>
+
+
+  <!-- REFUND POLICY -->
+  <div class="section" id="refunds">
+    <h2>Refund Policy</h2>
+    <p>
+      Refunds for tickets purchased through Planova are determined by the event organiser’s 
+      individual refund policy. Planova does not issue refunds directly unless explicitly stated.
+    </p>
+    <p>
+      If an event is cancelled or significantly changed, Planova will work with the organiser 
+      to ensure fair resolution for all affected customers.
+    </p>
+  </div>
+
+  <!-- COOKIE POLICY -->
+  <div class="section" id="cookies">
+    <h2>Cookie Policy</h2>
+    <p>
+      Planova uses cookies to improve performance, personalise your experience, and analyse 
+      platform usage. Cookies help us remember your preferences and optimise event discovery.
+    </p>
+    <p>
+      You may disable cookies in your browser settings, but some features may not function correctly.
+    </p>
+  </div>
+
+  <!-- DATA DELETION -->
+  <div class="section" id="deletion">
+    <h2>Data Deletion Request</h2>
+    <p>
+      You may request deletion of your Planova account and associated data at any time. 
+      Once deleted, your data cannot be recovered.
+    </p>
+    <p>
+      To request deletion, contact:<br>
+      <a href="mailto:support@planova.com">support@planova.com</a>
+    </p>
+  </div>
+
+  <!-- SECURITY -->
+  <div class="section" id="security">
+    <h2>Security Statement</h2>
+    <p>
+      Planova uses industry‑standard encryption, secure authentication, and modern cloud 
+      infrastructure to protect user data. We continuously monitor for vulnerabilities and 
+      apply security updates promptly.
+    </p>
+    <p>
+      We assure Planova will protect you and your data through responsible engineering and 
+      proactive security practices.
+    </p>
+  </div>
+
+  <!-- ORGANISER AGREEMENT -->
+  <div class="section" id="organiser">
+    <h2>Event Organiser Agreement</h2>
+    <p>
+      Event organisers using Planova agree to provide accurate event information, honour 
+      ticket sales, and comply with all applicable laws and venue requirements.
+    </p>
+    <p>
+      Organisers are responsible for customer service, event changes, cancellations, and 
+      refund decisions.
+    </p>
+  </div>
+
+  <!-- TICKETING POLICY -->
+  <div class="section" id="ticketing">
+    <h2>Ticketing Policy</h2>
+    <p>
+      Tickets purchased through Planova are delivered digitally and must be presented at 
+      the event for entry. Each ticket is unique and may not be duplicated or resold 
+      without organiser approval.
+    </p>
+    <p>
+      Planova is not responsible for lost, stolen, or invalid tickets purchased outside 
+      the official platform.
+    </p>
+  </div>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll(".tab");
+  const sections = document.querySelectorAll(".section");
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      tabs.forEach(t => t.classList.remove("active"));
+      sections.forEach(s => s.classList.remove("active"));
+
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).classList.add("active");
+    });
+  });
+</script>
+
+</body>
+</html>
