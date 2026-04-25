@@ -1,5 +1,5 @@
 // ===============================
-// STOCK EVENT DATA
+// STOCK EVENT DATA (UPGRADED)
 // ===============================
 const events = [
   {
@@ -8,186 +8,529 @@ const events = [
     category: "Clubbing",
     date: "2026-05-02",
     dateLabel: "Fri 2 May",
+    dateISO: "2026-05-02T22:00:00",
     time: "22:00–04:00",
     location: "Nottingham",
     price: 12,
     priceLabel: "From £12.00",
     image: "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg",
-    description: "A high‑energy night of house and techno with immersive lighting and top DJs."
+    description: "A high‑energy night of house and techno with immersive lighting and top DJs.",
+
+    venueCapacity: 900,
+    ageRestriction: "18+",
+    dressCode: "Smart casual",
+    genres: ["House", "Techno", "Throwbacks"],
+
+    ticketAvailability: {
+      standard: 150,
+      vip: 40,
+      vvip: 10
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: true,
+      afterparty: false,
+      merch: true
+    },
+
+    promoCodes: {
+      "NGONE10": 0.10
+    },
+
+    reviews: [
+      { stars: 5, text: "Unreal throwback vibes!", when: "Last month" },
+      { stars: 4, text: "DJ set was insane.", when: "2 weeks ago" }
+    ]
   },
+
   {
     id: 2,
     title: "Cell - Fiesta Fuego",
     category: "Live Music",
     date: "2026-06-10",
     dateLabel: "Sat 10 Jun",
+    dateISO: "2026-06-10T18:00:00",
     time: "18:00–23:00",
     location: "Nottingham",
     price: 15,
     priceLabel: "From £15.00",
     image: "https://images.pexels.com/photos/167404/pexels-photo-167404.jpeg",
-    description: "Live bands, cocktails and sunset views over the city."
+    description: "Live bands, cocktails and sunset views over the city.",
+
+    venueCapacity: 350,
+    ageRestriction: "18+",
+    dressCode: "Casual / Summer",
+    genres: ["Latin", "Live Bands", "Summer Vibes"],
+
+    ticketAvailability: {
+      standard: 80,
+      vip: 20,
+      vvip: 0
+    },
+
+    addons: {
+      queue_jump: false,
+      drinks_tokens: true,
+      afterparty: false,
+      merch: false
+    },
+
+    promoCodes: {},
+
+    reviews: [
+      { stars: 5, text: "Amazing atmosphere!", when: "3 weeks ago" }
+    ]
   },
+
   {
     id: 3,
     title: "Rock City - Asian Night Out",
     category: "Festival",
     date: "2026-07-21",
     dateLabel: "Sun 21 Jul",
+    dateISO: "2026-07-21T12:00:00",
     time: "12:00–23:00",
     location: "Nottingham",
     price: 35,
     priceLabel: "From £35.00",
     image: "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg",
-    description: "A full‑day outdoor festival featuring bassline, DnB and UKG artists."
+    description: "A full‑day outdoor festival featuring bassline, DnB and UKG artists.",
+
+    venueCapacity: 6000,
+    ageRestriction: "16+",
+    dressCode: "Festival wear",
+    genres: ["Bassline", "DnB", "UKG"],
+
+    ticketAvailability: {
+      standard: 1200,
+      vip: 300,
+      vvip: 60
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: true,
+      afterparty: true,
+      merch: true
+    },
+
+    promoCodes: {
+      "FEST15": 0.15
+    },
+
+    reviews: [
+      { stars: 5, text: "Massive lineup!", when: "1 month ago" },
+      { stars: 4, text: "VIP lounge was worth it.", when: "2 weeks ago" }
+    ]
   },
+
   {
     id: 4,
     title: "Mojos - Students Off School",
     category: "Student Night",
     date: "2026-04-28",
     dateLabel: "Wed 28 Apr",
+    dateISO: "2026-04-28T22:00:00",
     time: "22:00–03:00",
     location: "Nottingham",
     price: 5,
     priceLabel: "From £5.00",
     image: "https://images.pexels.com/photos/2747441/pexels-photo-2747441.jpeg",
-    description: "A night of 2000s and 2010s throwback hits for students."
+    description: "A night of 2000s and 2010s throwback hits for students.",
+
+    venueCapacity: 1100,
+    ageRestriction: "18+ (Student ID required)",
+    dressCode: "Anything goes",
+    genres: ["Throwbacks", "RnB", "Chart"],
+
+    ticketAvailability: {
+      standard: 300,
+      vip: 40,
+      vvip: 0
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: false,
+      afterparty: false,
+      merch: false
+    },
+
+    promoCodes: {
+      "STUDENT5": 0.05
+    },
+
+    reviews: [
+      { stars: 5, text: "Best student night in the city!", when: "Last week" }
+    ]
   },
 
-  // NEW EVENTS
   {
     id: 5,
     title: "INK - Tech House Takeover",
     category: "Clubbing",
     date: "2026-05-18",
     dateLabel: "Sat 18 May",
+    dateISO: "2026-05-18T22:00:00",
     time: "22:00–05:00",
     location: "London",
     price: 22,
     priceLabel: "From £22.00",
     image: "https://images.pexels.com/photos/3586968/pexels-photo-3586968.jpeg",
-    description: "A massive tech‑house takeover in the heart of London featuring top UK DJs."
+    description: "A massive tech‑house takeover in the heart of London featuring top UK DJs.",
+
+    venueCapacity: 1500,
+    ageRestriction: "18+",
+    dressCode: "Smart / Clubwear",
+    genres: ["Tech House", "House"],
+
+    ticketAvailability: {
+      standard: 200,
+      vip: 60,
+      vvip: 20
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: true,
+      afterparty: true,
+      merch: true
+    },
+
+    promoCodes: {
+      "INK20": 0.20
+    },
+
+    reviews: [
+      { stars: 5, text: "London energy was unreal!", when: "2 weeks ago" }
+    ]
   },
+
   {
     id: 6,
     title: "Manchester Indie Live – Northern Sound",
     category: "Live Music",
     date: "2026-06-14",
     dateLabel: "Sun 14 Jun",
+    dateISO: "2026-06-14T19:00:00",
     time: "19:00–23:30",
     location: "Manchester",
     price: 18,
     priceLabel: "From £18.00",
     image: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg",
-    description: "Manchester’s biggest indie night returns with live bands and local talent."
+    description: "Manchester’s biggest indie night returns with live bands and local talent.",
+
+    venueCapacity: 500,
+    ageRestriction: "18+",
+    dressCode: "Casual",
+    genres: ["Indie", "Rock"],
+
+    ticketAvailability: {
+      standard: 120,
+      vip: 20,
+      vvip: 0
+    },
+
+    addons: {
+      queue_jump: false,
+      drinks_tokens: true,
+      afterparty: false,
+      merch: false
+    },
+
+    promoCodes: {},
+
+    reviews: [
+      { stars: 5, text: "Incredible live bands!", when: "Last month" }
+    ]
   },
+
   {
     id: 7,
     title: "Birmingham Summer Carnival",
     category: "Festival",
     date: "2026-08-03",
     dateLabel: "Sun 3 Aug",
+    dateISO: "2026-08-03T11:00:00",
     time: "11:00–22:00",
     location: "Birmingham",
     price: 28,
     priceLabel: "From £28.00",
     image: "https://images.pexels.com/photos/1763072/pexels-photo-1763072.jpeg",
-    description: "A colourful outdoor carnival with food, music, dancers and live performers."
+    description: "A colourful outdoor carnival with food, music, dancers and live performers.",
+
+    venueCapacity: 7000,
+    ageRestriction: "All ages (Under 16 with adult)",
+    dressCode: "Festival wear",
+    genres: ["Carnival", "Dance", "Live Performers"],
+
+    ticketAvailability: {
+      standard: 1500,
+      vip: 400,
+      vvip: 80
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: true,
+      afterparty: true,
+      merch: true
+    },
+
+    promoCodes: {
+      "CARNIVAL10": 0.10
+    },
+
+    reviews: [
+      { stars: 5, text: "Amazing family-friendly festival!", when: "3 weeks ago" }
+    ]
   },
+
   {
     id: 8,
     title: "Liverpool DnB Warehouse Rave",
     category: "Clubbing",
     date: "2026-05-30",
     dateLabel: "Fri 30 May",
+    dateISO: "2026-05-30T23:00:00",
     time: "23:00–06:00",
     location: "Liverpool",
     price: 20,
     priceLabel: "From £20.00",
     image: "https://images.pexels.com/photos/1190296/pexels-photo-1190296.jpeg",
-    description: "A heavy‑hitting DnB rave inside Liverpool’s iconic warehouse venue."
+    description: "A heavy‑hitting DnB rave inside Liverpool’s iconic warehouse venue.",
+
+    venueCapacity: 1200,
+    ageRestriction: "18+",
+    dressCode: "Casual / Ravewear",
+    genres: ["DnB", "Jungle", "Bass"],
+
+    ticketAvailability: {
+      standard: 200,
+      vip: 40,
+      vvip: 10
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: true,
+      afterparty: false,
+      merch: true
+    },
+
+    promoCodes: {
+      "DNB10": 0.10
+    },
+
+    reviews: [
+      { stars: 5, text: "Warehouse vibes were insane!", when: "Last week" }
+    ]
   },
+
   {
     id: 9,
     title: "Leeds Sunset Terrace Party",
     category: "Clubbing",
     date: "2026-06-22",
     dateLabel: "Sat 22 Jun",
+    dateISO: "2026-06-22T17:00:00",
     time: "17:00–23:00",
     location: "Leeds",
     price: 14,
     priceLabel: "From £14.00",
     image: "https://images.pexels.com/photos/210922/pexels-photo-210922.jpeg",
-    description: "A chilled terrace party with house, disco and summer cocktails."
+    description: "A chilled terrace party with house, disco and summer cocktails.",
+
+    venueCapacity: 300,
+    ageRestriction: "18+",
+    dressCode: "Summer casual",
+    genres: ["House", "Disco", "Chill"],
+
+    ticketAvailability: {
+      standard: 80,
+      vip: 10,
+      vvip: 0
+    },
+
+    addons: {
+      queue_jump: false,
+      drinks_tokens: true,
+      afterparty: false,
+      merch: false
+    },
+
+    promoCodes: {},
+
+    reviews: [
+      { stars: 4, text: "Perfect summer vibes!", when: "2 weeks ago" }
+    ]
   },
+
   {
     id: 10,
     title: "Sheffield Rock Night – Steel City Live",
     category: "Live Music",
     date: "2026-05-11",
     dateLabel: "Sun 11 May",
+    dateISO: "2026-05-11T18:00:00",
     time: "18:00–23:00",
     location: "Sheffield",
     price: 16,
     priceLabel: "From £16.00",
     image: "https://images.pexels.com/photos/167636/pexels-photo-167636.jpeg",
-    description: "A night of rock, metal and alternative bands from across the UK."
+    description: "A night of rock, metal and alternative bands from across the UK.",
+
+    venueCapacity: 600,
+    ageRestriction: "18+",
+    dressCode: "Casual / Band tees",
+    genres: ["Rock", "Metal", "Alternative"],
+
+    ticketAvailability: {
+      standard: 150,
+      vip: 20,
+      vvip: 0
+    },
+
+    addons: {
+      queue_jump: false,
+      drinks_tokens: true,
+      afterparty: false,
+      merch: true
+    },
+
+    promoCodes: {},
+
+    reviews: [
+      { stars: 5, text: "Rock fans will love this!", when: "1 month ago" }
+    ]
   },
+
   {
     id: 11,
     title: "Bristol Drum & Bass Carnival",
     category: "Festival",
     date: "2026-07-05",
     dateLabel: "Sat 5 Jul",
+    dateISO: "2026-07-05T13:00:00",
     time: "13:00–23:00",
     location: "Bristol",
     price: 32,
     priceLabel: "From £32.00",
     image: "https://images.pexels.com/photos/1190295/pexels-photo-1190295.jpeg",
-    description: "Bristol’s legendary DnB carnival returns with huge headliners and street food."
+    description: "Bristol’s legendary DnB carnival returns with huge headliners and street food.",
+
+    venueCapacity: 8000,
+    ageRestriction: "16+",
+    dressCode: "Festival wear",
+    genres: ["DnB", "Bass", "Electronic"],
+
+    ticketAvailability: {
+      standard: 2000,
+      vip: 500,
+      vvip: 100
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: true,
+      afterparty: true,
+      merch: true
+    },
+
+    promoCodes: {
+      "BRISTOL15": 0.15
+    },
+
+    reviews: [
+      { stars: 5, text: "The biggest DnB event of the year!", when: "3 weeks ago" }
+    ]
   },
+
   {
     id: 12,
     title: "Cardiff Student Neon Rave",
     category: "Student Night",
     date: "2026-04-26",
     dateLabel: "Sat 26 Apr",
+    dateISO: "2026-04-26T22:00:00",
     time: "22:00–03:00",
     location: "Cardiff",
     price: 6,
     priceLabel: "From £6.00",
     image: "https://images.pexels.com/photos/2747440/pexels-photo-2747440.jpeg",
-    description: "A neon‑themed rave with glow sticks, UV paint and student drink deals."
+    description: "A neon‑themed rave with glow sticks, UV paint and student drink deals.",
+
+    venueCapacity: 900,
+    ageRestriction: "18+ (Student ID required)",
+    dressCode: "Neon / UV",
+    genres: ["RnB", "Chart", "Dance"],
+
+    ticketAvailability: {
+      standard: 250,
+      vip: 30,
+      vvip: 0
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: false,
+      afterparty: false,
+      merch: false
+    },
+
+    promoCodes: {
+      "NEON5": 0.05
+    },
+
+    reviews: [
+      { stars: 5, text: "UV paint everywhere — loved it!", when: "Last week" }
+    ]
   },
-  {
-    id: 13,
-    title: "Glasgow House Collective",
-    category: "Clubbing",
-    date: "2026-05-09",
-    dateLabel: "Fri 9 May",
-    time: "22:00–04:00",
-    location: "Glasgow",
-    price: 17,
-    priceLabel: "From £17.00",
-    image: "https://images.pexels.com/photos/1190294/pexels-photo-1190294.jpeg",
-    description: "A deep house and tech night featuring Scotland’s best underground DJs."
-  },
-  {
+{
     id: 14,
     title: "Newcastle Summer Beats Festival",
     category: "Festival",
     date: "2026-08-18",
     dateLabel: "Sun 18 Aug",
+    dateISO: "2026-08-18T12:00:00",
     time: "12:00–22:00",
     location: "Newcastle",
     price: 30,
     priceLabel: "From £30.00",
     image: "https://images.pexels.com/photos/1763073/pexels-photo-1763073.jpeg",
-    description: "A summer festival with pop, dance and electronic artists across two stages."
-  }
-];
+    description: "A summer festival with pop, dance and electronic artists across two stages.",
 
+    venueCapacity: 9000,
+    ageRestriction: "All ages (Under 16 with adult)",
+    dressCode: "Festival wear",
+    genres: ["Pop", "Dance", "Electronic"],
+
+    ticketAvailability: {
+      standard: 2500,
+      vip: 600,
+      vvip: 120
+    },
+
+    addons: {
+      queue_jump: true,
+      drinks_tokens: true,
+      afterparty: true,
+      merch: true
+    },
+
+    promoCodes: {
+      "SUMMERBEATS10": 0.10,
+      "VIP25": 0.25
+    },
+
+    reviews: [
+      { stars: 5, text: "Huge stages and amazing energy!", when: "Last month" },
+      { stars: 4, text: "VIP was definitely worth it.", when: "2 weeks ago" }
+    ]
+  }
+
+];
 
 
 

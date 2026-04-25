@@ -21,63 +21,268 @@
       inset: 0;
       background-size: cover;
       background-position: center;
-      filter: brightness(0.35) blur(4px);
+      filter: brightness(0.35) blur(5px);
       z-index: -2;
+      transition: background-image 0.4s ease-in-out;
     }
 
     body::after {
       content: "";
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: radial-gradient(circle at top, rgba(0,255,136,0.25), transparent 55%),
+                  rgba(0,0,0,0.75);
       z-index: -1;
     }
 
-    .checkout-wrapper {
-      max-width: 800px;
-      margin: 120px auto;
-      padding: 20px;
+    .checkout-shell {
+      max-width: 980px;
+      margin: 110px auto 80px;
+      padding: 0 16px 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr);
+      gap: 22px;
     }
 
-    .checkout-card {
-      background: rgba(20,20,20,0.75);
-      backdrop-filter: blur(12px);
+    @media (max-width: 900px) {
+      .checkout-shell {
+        grid-template-columns: 1fr;
+        margin-top: 100px;
+      }
+    }
+
+    .card {
+      background: rgba(15,15,15,0.85);
       border-radius: 18px;
       border: 1px solid rgba(0,255,136,0.4);
-      box-shadow: 0 0 25px rgba(0,255,136,0.15);
-      padding: 30px;
+      box-shadow: 0 0 25px rgba(0,255,136,0.18);
+      backdrop-filter: blur(14px);
+      padding: 20px 22px;
     }
 
-    .checkout-card h1 {
-      margin-top: 0;
-      font-size: 30px;
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 10px;
     }
 
-    .checkout-meta {
-      opacity: 0.8;
-      margin-bottom: 25px;
+    .card-title {
+      margin: 0;
+      font-size: 22px;
+      color: #00ff88;
     }
 
-    .summary-row {
+    .card-subtitle {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .event-header {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .event-thumb {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.15);
+      flex-shrink: 0;
+    }
+
+    .event-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .event-main-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .event-meta-line {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .event-tags {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    .tag-pill {
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,136,0.5);
+      background: rgba(0,0,0,0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .edit-link {
+      font-size: 12px;
+      color: #00ff88;
+      text-decoration: none;
+      opacity: 0.9;
+    }
+
+    .edit-link:hover {
+      text-decoration: underline;
+    }
+
+    .summary-section-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.8;
+      margin: 10px 0 4px;
+    }
+
+    .line-items {
+      border-radius: 12px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .line-row {
       display: flex;
       justify-content: space-between;
-      margin: 8px 0;
+      margin: 3px 0;
     }
 
-    .summary-row.total {
-      margin-top: 15px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      font-weight: bold;
-      font-size: 18px;
+    .line-row.muted {
+      opacity: 0.75;
+      font-size: 12px;
+    }
+
+    .line-row.total {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255,255,255,0.2);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .line-row.total span:last-child {
+      color: #00ff88;
+    }
+
+    .line-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,136,0.6);
+      color: #00ff88;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .discount {
+      color: #ffdf6b;
+    }
+
+    .discount span:last-child {
+      color: #ffdf6b;
+    }
+
+    .danger {
+      color: #ff6b6b;
+    }
+
+    .addons-list {
+      margin-top: 4px;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .addons-list span {
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .trust-strip {
+      margin-top: 12px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: radial-gradient(circle at left, rgba(0,255,136,0.25), transparent 60%);
+      border: 1px solid rgba(0,255,136,0.4);
+      font-size: 11px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .trust-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #00ff88;
+      box-shadow: 0 0 10px rgba(0,255,136,0.9);
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 3px rgba(0,255,136,0.4); }
+      50% { box-shadow: 0 0 10px rgba(0,255,136,1); }
+      100% { box-shadow: 0 0 3px rgba(0,255,136,0.4); }
+    }
+
+    .trust-icons {
+      display: flex;
+      gap: 6px;
+      font-size: 10px;
+      opacity: 0.9;
+    }
+
+    .trust-pill {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0,0,0,0.7);
+    }
+
+    .pay-card {
+      position: relative;
+    }
+
+    .terms-row {
+      margin-top: 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      opacity: 0.9;
+    }
+
+    .terms-row input {
+      margin-top: 2px;
+      accent-color: #00ff88;
     }
 
     .btn-primary {
-      margin-top: 25px;
+      margin-top: 14px;
       width: 100%;
       padding: 14px;
-      font-size: 18px;
+      font-size: 16px;
       border-radius: 10px;
       background: linear-gradient(90deg, #00ff88, #00cc6a);
       border: none;
@@ -87,16 +292,77 @@
       transition: 0.2s;
     }
 
-    .btn-primary:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 15px #00ff88;
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 0 18px #00ff88;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .pay-note {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.8;
     }
 
     .error-msg {
-      margin-top: 15px;
+      margin-top: 10px;
       color: #ff6b6b;
-      font-size: 14px;
+      font-size: 12px;
       display: none;
+    }
+
+    .loading-msg {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #00ff88;
+      display: none;
+    }
+
+    .contact-card {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .contact-card a {
+      color: #00ff88;
+      text-decoration: none;
+    }
+
+    .contact-card a:hover {
+      text-decoration: underline;
+    }
+
+    .empty-state {
+      max-width: 600px;
+      margin: 160px auto;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    .empty-state h1 {
+      color: #00ff88;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      opacity: 0.85;
+      font-size: 14px;
+    }
+
+    .empty-state a {
+      color: #00ff88;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .empty-state a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -111,111 +377,436 @@
   <div class="nav-right"></div>
 </header>
 
-<div class="checkout-wrapper">
-  <div class="checkout-card">
-    <h1 id="checkout-title">Checkout</h1>
-    <p id="checkout-meta" class="checkout-meta"></p>
+<div id="empty-state" class="empty-state" style="display:none;">
+  <h1>No tickets in checkout</h1>
+  <p>Your checkout session is empty or has expired.</p>
+  <p><a href="index.html">Browse events</a></p>
+</div>
 
-    <div id="summary">
-      <div class="summary-row">
-        <span>Standard tickets</span>
-        <span id="summary-standard">0</span>
+<div id="checkout-shell" class="checkout-shell" style="display:none;">
+  <!-- LEFT: Event + Summary -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Review your order</h2>
+          <p class="card-subtitle">Make sure everything looks right before you pay.</p>
+        </div>
+        <a href="gettickets.html" class="edit-link">Edit selection</a>
       </div>
-      <div class="summary-row">
-        <span>VIP tickets</span>
-        <span id="summary-vip">0</span>
+
+      <div class="event-header">
+        <div class="event-thumb">
+          <img id="event-image" src="" alt="Event image">
+        </div>
+        <div>
+          <div id="event-title" class="event-main-title"></div>
+          <div id="event-meta" class="event-meta-line"></div>
+          <div class="event-tags">
+            <span id="tag-age" class="tag-pill"></span>
+            <span id="tag-dress" class="tag-pill"></span>
+            <span id="tag-capacity" class="tag-pill"></span>
+            <span id="tag-genre-1" class="tag-pill" style="display:none;"></span>
+            <span id="tag-genre-2" class="tag-pill" style="display:none;"></span>
+            <span id="tag-genre-3" class="tag-pill" style="display:none;"></span>
+          </div>
+        </div>
       </div>
-      <div class="summary-row total">
-        <span>Total</span>
-        <span id="summary-total">£0</span>
+
+      <div class="summary-section-title">Tickets</div>
+      <div class="line-items">
+        <div class="line-row">
+          <div class="line-label">
+            <span>Standard</span>
+            <span id="badge-standard" class="badge">0x</span>
+          </div>
+          <span id="amount-standard">£0</span>
+        </div>
+        <div class="line-row">
+          <div class="line-label">
+            <span>VIP</span>
+            <span id="badge-vip" class="badge">0x</span>
+          </div>
+          <span id="amount-vip">£0</span>
+        </div>
+        <div class="line-row">
+          <div class="line-label">
+            <span>VVIP</span>
+            <span id="badge-vvip" class="badge">0x</span>
+          </div>
+          <span id="amount-vvip">£0</span>
+        </div>
+        <div class="line-row total">
+          <span>Ticket subtotal</span>
+          <span id="amount-ticket-subtotal">£0</span>
+        </div>
+      </div>
+
+      <div class="summary-section-title">Add-ons</div>
+      <div class="line-items">
+        <div class="line-row muted">
+          <span>Selected add-ons</span>
+          <span id="addons-label">None</span>
+        </div>
+        <div class="line-row">
+          <span>Add-ons total</span>
+          <span id="amount-addons">£0</span>
+        </div>
+      </div>
+
+      <div class="summary-section-title">Fees & taxes</div>
+      <div class="line-items">
+        <div class="line-row">
+          <span>Booking fee (5%)</span>
+          <span id="amount-booking-fee">£0</span>
+        </div>
+        <div class="line-row">
+          <span>VAT (20%)</span>
+          <span id="amount-vat">£0</span>
+        </div>
+        <div class="line-row discount">
+          <span id="discount-label">Discount</span>
+          <span id="amount-discount">£0</span>
+        </div>
+        <div class="line-row total">
+          <span>Total to pay</span>
+          <span id="amount-total">£0</span>
+        </div>
+      </div>
+
+      <div class="trust-strip">
+        <div class="trust-dot"></div>
+        <span>Secure payments powered by Stripe. Your card details are encrypted and never stored by PLANOVA.</span>
+        <div class="trust-icons">
+          <span class="trust-pill">Visa</span>
+          <span class="trust-pill">Mastercard</span>
+          <span class="trust-pill">Amex</span>
+          <span class="trust-pill">Apple Pay*</span>
+          <span class="trust-pill">Google Pay*</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Payment -->
+  <div class="card pay-card">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Payment</h2>
+        <p class="card-subtitle">Complete your booking in a few seconds.</p>
       </div>
     </div>
 
+    <div class="line-items">
+      <div class="line-row">
+        <span>Amount due</span>
+        <span id="amount-due">£0</span>
+      </div>
+      <div class="line-row muted">
+        <span>Tickets</span>
+        <span id="tickets-count">0 total</span>
+      </div>
+    </div>
+
+    <div class="terms-row">
+      <input type="checkbox" id="terms-checkbox">
+      <label for="terms-checkbox">
+        I agree to the event’s Terms &amp; Conditions and understand that tickets are non‑refundable unless the event is cancelled.
+      </label>
+    </div>
+
     <button class="btn-primary" id="pay-btn">Pay with card</button>
+    <div class="pay-note">
+      You’ll be redirected to a secure Stripe checkout page to complete your payment.
+    </div>
+
+    <div class="loading-msg" id="loading-msg">Creating secure checkout session…</div>
     <div class="error-msg" id="error-msg"></div>
+
+    <div class="contact-card">
+      Need help? Contact <a href="mailto:support@planova.events">support@planova.events</a> with your order details.
+    </div>
   </div>
 </div>
 
 <!-- Stripe.js -->
 <script src="https://js.stripe.com/v3/"></script>
+<script src="script.js"></script>
 
 <script>
-  // 🔑 Replace with your real Stripe publishable key
-  const STRIPE_PUBLISHABLE_KEY = "pk_live_51TPW2PKZHIDdJCsDPK38iecJJk1m2k0u7nuJFjj88QqD58NdqmUDegA7EttLE3IFUZyQRnwxjCME9SZeFMv5vuLB00mmt69Ehc";
+  // Replace with your real Stripe publishable key
+  var STRIPE_PUBLISHABLE_KEY = "pk_live_51TPW2PKZHIDdJCsDPK38iecJJk1m2k0u7nuJFjj88QqD58NdqmUDegA7EttLE3IFUZyQRnwxjCME9SZeFMv5vuLB00mmt69Ehc";
+  var stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
-  const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-
-  const eventData = JSON.parse(localStorage.getItem("selected_event") || "null");
-  const pending = JSON.parse(localStorage.getItem("pending_checkout") || "null");
-
-  if (!eventData || !pending) {
-    document.getElementById("checkout-title").textContent = "No tickets in checkout";
-    document.getElementById("summary").style.display = "none";
-    document.getElementById("pay-btn").style.display = "none";
-  } else {
-    // Background
-    document.body.style.backgroundImage = `url('${eventData.image}')`;
-
-    // Text
-    document.getElementById("checkout-title").textContent = eventData.title;
-    document.getElementById("checkout-meta").textContent =
-      `${eventData.dateLabel} • ${eventData.time} • ${eventData.location}`;
-
-    const base = eventData.price;
-    const standard = pending.standard || 0;
-    const vip = pending.vip || 0;
-    const total = (standard * base) + (vip * base * 2);
-
-    document.getElementById("summary-standard").textContent = `${standard}`;
-    document.getElementById("summary-vip").textContent = `${vip}`;
-    document.getElementById("summary-total").textContent = `£${total}`;
+  function money(value) {
+    var v = value || 0;
+    var fixed = v.toFixed(2);
+    if (fixed.slice(-3) === ".00") {
+      return "£" + fixed.slice(0, -3);
+    }
+    return "£" + fixed;
   }
 
-  document.getElementById("pay-btn").onclick = async () => {
-    const errorEl = document.getElementById("error-msg");
-    errorEl.style.display = "none";
-    errorEl.textContent = "";
+  document.addEventListener("DOMContentLoaded", function () {
+    var eventData = null;
+    var pending = null;
 
-    if (!eventData || !pending) {
-      errorEl.textContent = "No tickets to checkout.";
-      errorEl.style.display = "block";
-      return;
+    try {
+      eventData = JSON.parse(localStorage.getItem("selected_event") || "null");
+    } catch (e) {
+      eventData = null;
     }
 
     try {
-      const res = await fetch("/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
+      pending = JSON.parse(localStorage.getItem("pending_checkout") || "null");
+    } catch (e2) {
+      pending = null;
+    }
+
+    var shell = document.getElementById("checkout-shell");
+    var emptyState = document.getElementById("empty-state");
+
+    if (!eventData || !pending) {
+      shell.style.display = "none";
+      emptyState.style.display = "block";
+      document.body.style.backgroundImage = "none";
+      return;
+    }
+
+    // Background
+    if (eventData.image) {
+      document.body.style.backgroundImage = "url('" + eventData.image + "')";
+    }
+
+    // Event header
+    var imgEl = document.getElementById("event-image");
+    if (eventData.image) {
+      imgEl.setAttribute("src", eventData.image);
+    } else {
+      imgEl.setAttribute("src", "");
+    }
+
+    var titleEl = document.getElementById("event-title");
+    titleEl.textContent = eventData.title || "Event";
+
+    var metaEl = document.getElementById("event-meta");
+    var metaParts = [];
+    if (eventData.dateLabel) {
+      metaParts.push(eventData.dateLabel);
+    }
+    if (eventData.time) {
+      metaParts.push(eventData.time);
+    }
+    if (eventData.location) {
+      metaParts.push(eventData.location);
+    }
+    metaEl.textContent = metaParts.join(" • ");
+
+    var ageRestriction = eventData.ageRestriction || "18+";
+    var dressCode = eventData.dressCode || "Venue policy applies";
+    var capacityText = "Capacity varies by venue";
+    if (eventData.venueCapacity) {
+      capacityText = "Approx. " + eventData.venueCapacity + " attendees";
+    }
+
+    document.getElementById("tag-age").textContent = ageRestriction;
+    document.getElementById("tag-dress").textContent = dressCode;
+    document.getElementById("tag-capacity").textContent = capacityText;
+
+    var genres = eventData.genres || [];
+    var g1 = document.getElementById("tag-genre-1");
+    var g2 = document.getElementById("tag-genre-2");
+    var g3 = document.getElementById("tag-genre-3");
+
+    if (genres.length > 0) {
+      g1.textContent = genres[0];
+      g1.style.display = "inline-block";
+    }
+    if (genres.length > 1) {
+      g2.textContent = genres[1];
+      g2.style.display = "inline-block";
+    }
+    if (genres.length > 2) {
+      g3.textContent = genres[2];
+      g3.style.display = "inline-block";
+    }
+
+    // Normalise ticket data
+    var base = eventData.price || 0;
+    var standard = pending.standard || 0;
+    var vip = pending.vip || 0;
+    var vvip = pending.vvip || 0;
+
+    var hasPricingObject = pending.pricing && typeof pending.pricing === "object";
+
+    var ticketSubtotal;
+    if (hasPricingObject && typeof pending.pricing.ticketSubtotal === "number") {
+      ticketSubtotal = pending.pricing.ticketSubtotal;
+    } else {
+      ticketSubtotal = (standard * base) + (vip * base * 2) + (vvip * base * 4);
+    }
+
+    var addonsArray = pending.addons || [];
+    var addonsTotal = 0;
+    if (hasPricingObject && typeof pending.pricing.addonsTotal === "number") {
+      addonsTotal = pending.pricing.addonsTotal;
+    }
+
+    var bookingFee;
+    if (hasPricingObject && typeof pending.pricing.bookingFee === "number") {
+      bookingFee = pending.pricing.bookingFee;
+    } else {
+      if (ticketSubtotal > 0) {
+        bookingFee = ticketSubtotal * 0.05;
+        if (bookingFee < 1) {
+          bookingFee = 1;
+        }
+      } else {
+        bookingFee = 0;
+      }
+    }
+
+    var vat;
+    if (hasPricingObject && typeof pending.pricing.vat === "number") {
+      vat = pending.pricing.vat;
+    } else {
+      if (ticketSubtotal > 0) {
+        vat = ticketSubtotal * 0.2;
+      } else {
+        vat = 0;
+      }
+    }
+
+    var discount = 0;
+    if (hasPricingObject && typeof pending.pricing.discount === "number") {
+      discount = pending.pricing.discount;
+    }
+
+    var promoCode = null;
+    if (hasPricingObject && pending.pricing.promoCode) {
+      promoCode = pending.pricing.promoCode;
+    }
+
+    var total;
+    if (hasPricingObject && typeof pending.pricing.total === "number") {
+      total = pending.pricing.total;
+    } else {
+      total = ticketSubtotal + addonsTotal + bookingFee + vat - discount;
+      if (total < 0) {
+        total = 0;
+      }
+    }
+
+    // Fill ticket section
+    document.getElementById("badge-standard").textContent = standard + "x";
+    document.getElementById("badge-vip").textContent = vip + "x";
+    document.getElementById("badge-vvip").textContent = vvip + "x";
+
+    document.getElementById("amount-standard").textContent = money(standard * base);
+    document.getElementById("amount-vip").textContent = money(vip * base * 2);
+    document.getElementById("amount-vvip").textContent = money(vvip * base * 4);
+    document.getElementById("amount-ticket-subtotal").textContent = money(ticketSubtotal);
+
+    // Add-ons
+    var addonsLabelEl = document.getElementById("addons-label");
+    if (addonsArray && addonsArray.length > 0) {
+      addonsLabelEl.textContent = addonsArray.join(", ");
+    } else {
+      addonsLabelEl.textContent = "None";
+    }
+    document.getElementById("amount-addons").textContent = money(addonsTotal);
+
+    // Fees & taxes
+    document.getElementById("amount-booking-fee").textContent = money(bookingFee);
+    document.getElementById("amount-vat").textContent = money(vat);
+
+    var discountLabelEl = document.getElementById("discount-label");
+    if (promoCode) {
+      discountLabelEl.textContent = "Discount (code: " + promoCode + ")";
+    } else {
+      discountLabelEl.textContent = "Discount";
+    }
+    document.getElementById("amount-discount").textContent = "-" + money(discount).slice(1);
+
+    document.getElementById("amount-total").textContent = money(total);
+    document.getElementById("amount-due").textContent = money(total);
+    document.getElementById("tickets-count").textContent = (standard + vip + vvip) + " total";
+
+    // Show shell
+    shell.style.display = "grid";
+    emptyState.style.display = "none";
+
+    // Stripe button logic
+    var payBtn = document.getElementById("pay-btn");
+    var errorEl = document.getElementById("error-msg");
+    var loadingEl = document.getElementById("loading-msg");
+    var termsCheckbox = document.getElementById("terms-checkbox");
+
+    if (payBtn) {
+      payBtn.addEventListener("click", function () {
+        if (!eventData || !pending) {
+          return;
+        }
+
+        errorEl.style.display = "none";
+        errorEl.textContent = "";
+        loadingEl.style.display = "none";
+
+        if (!termsCheckbox.checked) {
+          errorEl.textContent = "Please agree to the Terms & Conditions before continuing.";
+          errorEl.style.display = "block";
+          return;
+        }
+
+        payBtn.disabled = true;
+        loadingEl.style.display = "block";
+
+        var payload = {
           event_id: eventData.id,
           event_title: eventData.title,
-          standard: pending.standard,
-          vip: pending.vip,
+          standard: pending.standard || 0,
+          vip: pending.vip || 0,
           price: eventData.price
+        };
+
+        if (typeof pending.vvip === "number") {
+          payload.vvip = pending.vvip;
+        }
+        if (pending.addons) {
+          payload.addons = pending.addons;
+        }
+        if (pending.pricing) {
+          payload.pricing = pending.pricing;
+        }
+
+        fetch("/create-checkout-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         })
+        .then(function (res) {
+          if (!res.ok) {
+            throw new Error("Failed to create checkout session. Please try again.");
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          return stripe.redirectToCheckout({ sessionId: data.sessionId });
+        })
+        .then(function (result) {
+          if (result && result.error) {
+            throw new Error(result.error.message);
+          }
+        })
+        .catch(function (err) {
+          errorEl.textContent = err.message || "Something went wrong starting checkout.";
+          errorEl.style.display = "block";
+          payBtn.disabled = false;
+          loadingEl.style.display = "none";
+        });
       });
-
-      if (!res.ok) {
-        throw new Error("Failed to create checkout session");
-      }
-
-      const data = await res.json();
-
-      const result = await stripe.redirectToCheckout({
-        sessionId: data.sessionId
-      });
-
-      if (result.error) {
-        errorEl.textContent = result.error.message;
-        errorEl.style.display = "block";
-      }
-    } catch (err) {
-      errorEl.textContent = err.message || "Something went wrong starting checkout.";
-      errorEl.style.display = "block";
     }
-  };
+  });
 </script>
 
 </body>
