@@ -6,17 +6,20 @@ import stripe
 import os
 
 app = Flask(__name__)
-CORS(app)
 
-# -----------------------------
+# -------------------------------------------------
+# CORS — allow your frontend domain to call backend
+# -------------------------------------------------
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+# -------------------------------------------------
 # Stripe Setup
-# -----------------------------
-# ❗ IMPORTANT: Replace this with YOUR real secret key (sk_live_...)
-stripe.api_key = "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"
+# -------------------------------------------------
+stripe.api_key = "YOUR_STRIPE_SECRET_KEY"   # sk_live_...
 
-# -----------------------------
+# -------------------------------------------------
 # Database Setup
-# -----------------------------
+# -------------------------------------------------
 def init_db():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
@@ -33,9 +36,9 @@ def init_db():
 
 init_db()
 
-# -----------------------------
+# -------------------------------------------------
 # Register Route
-# -----------------------------
+# -------------------------------------------------
 @app.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -62,10 +65,9 @@ def register():
     except sqlite3.IntegrityError:
         return jsonify({"success": False, "message": "Email already registered"}), 400
 
-
-# -----------------------------
+# -------------------------------------------------
 # Login Route
-# -----------------------------
+# -------------------------------------------------
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -88,10 +90,9 @@ def login():
 
     return jsonify({"success": True, "full_name": full_name})
 
-
-# -----------------------------
+# -------------------------------------------------
 # Delete Account
-# -----------------------------
+# -------------------------------------------------
 @app.route("/delete-account", methods=["POST"])
 def delete_account():
     data = request.get_json()
@@ -120,10 +121,9 @@ def delete_account():
 
     return jsonify({"success": True, "message": "Account deleted"})
 
-
-# -----------------------------
+# -------------------------------------------------
 # Change Password
-# -----------------------------
+# -------------------------------------------------
 @app.route("/change-password", methods=["POST"])
 def change_password():
     data = request.get_json()
@@ -160,42 +160,111 @@ def change_password():
 
     return jsonify({"success": True, "message": "Password updated"})
 
+# -------------------------------------------------
+# Render Wake-Up Endpoint (prevents first-request failure)
+# -------------------------------------------------
+@app.route("/wakeup")
+def wakeup():
+    return "awake", 200
 
-# -----------------------------
-# Stripe Checkout Session
-# -----------------------------
+# -------------------------------------------------
+# Stripe Checkout Session (FULLY UPGRADED)
+# -------------------------------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json()
 
-    event_id = data.get("event_id")
+    event_title = data.get("event_title", "Event")
     standard = int(data.get("standard", 0))
     vip = int(data.get("vip", 0))
-    price = int(data.get("price", 0))
+    vvip = int(data.get("vvip", 0))
+    addons = data.get("addons", [])
+    pricing = data.get("pricing", {})
 
-    if standard == 0 and vip == 0:
+    # Fallback price (old system)
+    base_price = int(data.get("price", 0))
+
+    if standard + vip + vvip == 0:
         return jsonify({"error": "No tickets selected"}), 400
 
     line_items = []
 
+    # Standard
     if standard > 0:
         line_items.append({
             "price_data": {
                 "currency": "gbp",
-                "product_data": {"name": f"Standard Ticket (Event {event_id})"},
-                "unit_amount": price * 100
+                "product_data": {"name": event_title + " – Standard Ticket"},
+                "unit_amount": base_price * 100
             },
             "quantity": standard
         })
 
+    # VIP
     if vip > 0:
         line_items.append({
             "price_data": {
                 "currency": "gbp",
-                "product_data": {"name": f"VIP Ticket (Event {event_id})"},
-                "unit_amount": price * 2 * 100
+                "product_data": {"name": event_title + " – VIP Ticket"},
+                "unit_amount": base_price * 2 * 100
             },
             "quantity": vip
+        })
+
+    # VVIP
+    if vvip > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": event_title + " – VVIP Ticket"},
+                "unit_amount": base_price * 4 * 100
+            },
+            "quantity": vvip
+        })
+
+    # Add-ons
+    if pricing and "addonsBreakdown" in pricing:
+        for addon in pricing["addonsBreakdown"]:
+            line_items.append({
+                "price_data": {
+                    "currency": "gbp",
+                    "product_data": {"name": addon["label"]},
+                    "unit_amount": int(addon["amount"] * 100)
+                },
+                "quantity": 1
+            })
+
+    # Booking fee
+    if pricing and "bookingFee" in pricing:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": "Booking Fee"},
+                "unit_amount": int(pricing["bookingFee"] * 100)
+            },
+            "quantity": 1
+        })
+
+    # VAT
+    if pricing and "vat" in pricing:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": "VAT (20%)"},
+                "unit_amount": int(pricing["vat"] * 100)
+            },
+            "quantity": 1
+        })
+
+    # Discount (negative line item)
+    if pricing and "discount" in pricing and pricing["discount"] > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": "Discount"},
+                "unit_amount": -int(pricing["discount"] * 100)
+            },
+            "quantity": 1
         })
 
     try:
@@ -203,8 +272,8 @@ def create_checkout_session():
             payment_method_types=["card"],
             mode="payment",
             line_items=line_items,
-            success_url="http://127.0.0.1:5000/success.html",
-            cancel_url="http://127.0.0.1:5000/checkout.html"
+            success_url="YOUR_FRONTEND_URL/success.html",
+            cancel_url="YOUR_FRONTEND_URL/checkout.html"
         )
 
         return jsonify({"sessionId": session.id})
@@ -212,10 +281,9 @@ def create_checkout_session():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-# -----------------------------
-# Serve HTML files (NO STATIC FOLDER NEEDED)
-# -----------------------------
+# -------------------------------------------------
+# Serve HTML files (Render static hosting)
+# -------------------------------------------------
 @app.route("/")
 def serve_index():
     return send_from_directory(os.getcwd(), "index.html")
@@ -224,9 +292,8 @@ def serve_index():
 def serve_files(filename):
     return send_from_directory(os.getcwd(), filename)
 
-
-# -----------------------------
-# Run Server
-# -----------------------------
+# -------------------------------------------------
+# Run Server (Render ignores this)
+# -------------------------------------------------
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)

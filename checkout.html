@@ -534,9 +534,13 @@
 <script src="script.js"></script>
 
 <script>
-  // Replace with your real Stripe publishable key
+  // 🔑 Stripe publishable key (keep as is or update if needed)
   var STRIPE_PUBLISHABLE_KEY = "pk_live_51TPW2PKZHIDdJCsDPK38iecJJk1m2k0u7nuJFjj88QqD58NdqmUDegA7EttLE3IFUZyQRnwxjCME9SZeFMv5vuLB00mmt69Ehc";
   var stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+
+  // 🌐 Your Render backend URL (NO trailing slash)
+  // Example: "https://planova-backend.onrender.com"
+  var BACKEND_URL = "https://YOUR-RENDER-APP-NAME.onrender.com";
 
   function money(value) {
     var v = value || 0;
@@ -779,35 +783,40 @@
           payload.pricing = pending.pricing;
         }
 
-        fetch("/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        })
-        .then(function (res) {
-          if (!res.ok) {
-            throw new Error("Failed to create checkout session. Please try again.");
-          }
-          return res.json();
-        })
-        .then(function (data) {
-          return stripe.redirectToCheckout({ sessionId: data.sessionId });
-        })
-        .then(function (result) {
-          if (result && result.error) {
-            throw new Error(result.error.message);
-          }
-        })
-        .catch(function (err) {
-          errorEl.textContent = err.message || "Something went wrong starting checkout.";
-          errorEl.style.display = "block";
-          payBtn.disabled = false;
-          loadingEl.style.display = "none";
-        });
+        // 🔥 Call Render backend (with wakeup first)
+        fetch(BACKEND_URL + "/wakeup")
+          .then(function () {
+            return fetch(BACKEND_URL + "/create-checkout-session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+          })
+          .then(function (res) {
+            if (!res.ok) {
+              throw new Error("Failed to create checkout session. Please try again.");
+            }
+            return res.json();
+          })
+          .then(function (data) {
+            return stripe.redirectToCheckout({ sessionId: data.sessionId });
+          })
+          .then(function (result) {
+            if (result && result.error) {
+              throw new Error(result.error.message);
+            }
+          })
+          .catch(function (err) {
+            errorEl.textContent = err.message || "Something went wrong starting checkout.";
+            errorEl.style.display = "block";
+            payBtn.disabled = false;
+            loadingEl.style.display = "none";
+          });
       });
     }
   });
 </script>
+
 
 </body>
 </html>
