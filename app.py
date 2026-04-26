@@ -15,7 +15,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # -------------------------------------------------
 # Stripe Setup
 # -------------------------------------------------
-stripe.api_key = "YOUR_STRIPE_SECRET_KEY"   # sk_live_...
+stripe.api_key = "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_STRIPE_SECRET_KEY"   # sk_live_...
 
 # -------------------------------------------------
 # Database Setup
