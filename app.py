@@ -8,21 +8,18 @@ import os
 app = Flask(__name__)
 
 # -------------------------------------------------
-# CORS — allow your frontend domain to call backend
+# CORS
 # -------------------------------------------------
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # -------------------------------------------------
 # Stripe Setup
 # -------------------------------------------------
-# Use your real live secret key here (already provided by you)
 stripe.api_key = "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"
-
-# Your live frontend URL
 FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
-# Database Setup
+# DB Setup
 # -------------------------------------------------
 def init_db():
     conn = sqlite3.connect("users.db")
@@ -41,12 +38,11 @@ def init_db():
 init_db()
 
 # -------------------------------------------------
-# Register Route
+# Auth routes
 # -------------------------------------------------
 @app.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
-
+    data = request.get_json() or {}
     full_name = data.get("full_name")
     email = data.get("email")
     password = data.get("password")
@@ -69,12 +65,9 @@ def register():
     except sqlite3.IntegrityError:
         return jsonify({"success": False, "message": "Email already registered"}), 400
 
-# -------------------------------------------------
-# Login Route
-# -------------------------------------------------
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
@@ -94,12 +87,9 @@ def login():
 
     return jsonify({"success": True, "full_name": full_name})
 
-# -------------------------------------------------
-# Delete Account
-# -------------------------------------------------
 @app.route("/delete-account", methods=["POST"])
 def delete_account():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
@@ -125,12 +115,9 @@ def delete_account():
 
     return jsonify({"success": True, "message": "Account deleted"})
 
-# -------------------------------------------------
-# Change Password
-# -------------------------------------------------
 @app.route("/change-password", methods=["POST"])
 def change_password():
-    data = request.get_json()
+    data = request.get_json() or {}
     email = data.get("email")
     old_password = data.get("old_password")
     new_password = data.get("new_password")
@@ -165,11 +152,30 @@ def change_password():
     return jsonify({"success": True, "message": "Password updated"})
 
 # -------------------------------------------------
-# Render Wake-Up Endpoint (prevents first-request failure)
+# Wakeup
 # -------------------------------------------------
 @app.route("/wakeup")
 def wakeup():
     return "awake", 200
+
+# -------------------------------------------------
+# Helpers
+# -------------------------------------------------
+def safe_int(value, default=0):
+    try:
+        if value is None or value == "":
+            return default
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+def safe_float(value, default=0.0):
+    try:
+        if value is None or value == "":
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
 
 # -------------------------------------------------
 # Stripe Checkout Session
@@ -177,15 +183,16 @@ def wakeup():
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json() or {}
+    print("INCOMING CHECKOUT DATA:", data)  # debug in Render logs
 
     event_title = data.get("event_title", "Event")
-    standard = int(data.get("standard", 0) or 0)
-    vip = int(data.get("vip", 0) or 0)
-    vvip = int(data.get("vvip", 0) or 0)
-    pricing = data.get("pricing", {}) or {}
 
-    # Fallback base ticket price (from event)
-    base_price = int(data.get("price", 0) or 0)
+    standard = safe_int(data.get("standard"), 0)
+    vip = safe_int(data.get("vip"), 0)
+    vvip = safe_int(data.get("vvip"), 0)
+
+    pricing = data.get("pricing") or {}
+    base_price = safe_int(data.get("price"), 0)
 
     if standard + vip + vvip == 0:
         return jsonify({"error": "No tickets selected"}), 400
@@ -226,10 +233,10 @@ def create_checkout_session():
         })
 
     # Add-ons
-    addons_breakdown = pricing.get("addonsBreakdown", []) or []
+    addons_breakdown = pricing.get("addonsBreakdown") or []
     for addon in addons_breakdown:
-        amount = addon.get("amount", 0) or 0
         label = addon.get("label", "Add-on")
+        amount = safe_float(addon.get("amount"), 0.0)
         line_items.append({
             "price_data": {
                 "currency": "gbp",
@@ -240,7 +247,7 @@ def create_checkout_session():
         })
 
     # Booking fee
-    booking_fee = pricing.get("bookingFee", 0) or 0
+    booking_fee = safe_float(pricing.get("bookingFee"), 0.0)
     if booking_fee > 0:
         line_items.append({
             "price_data": {
@@ -252,7 +259,7 @@ def create_checkout_session():
         })
 
     # VAT
-    vat = pricing.get("vat", 0) or 0
+    vat = safe_float(pricing.get("vat"), 0.0)
     if vat > 0:
         line_items.append({
             "price_data": {
@@ -262,9 +269,6 @@ def create_checkout_session():
             },
             "quantity": 1
         })
-
-    # IMPORTANT: no negative line items (Stripe doesn't allow that)
-    # If you want discounts, use Stripe coupons/promo codes instead.
 
     if not line_items:
         return jsonify({"error": "No line items generated"}), 400
@@ -277,16 +281,14 @@ def create_checkout_session():
             success_url=f"{FRONTEND_URL}/success.html",
             cancel_url=f"{FRONTEND_URL}/checkout.html"
         )
-
         return jsonify({"sessionId": session.id})
 
     except Exception as e:
-        # Log to server console for debugging on Render
-        print("STRIPE ERROR:", e)
+        print("STRIPE ERROR:", e)  # shows in Render logs
         return jsonify({"error": str(e)}), 500
 
 # -------------------------------------------------
-# Serve HTML files (Render static hosting)
+# Static files
 # -------------------------------------------------
 @app.route("/")
 def serve_index():
@@ -297,7 +299,7 @@ def serve_files(filename):
     return send_from_directory(os.getcwd(), filename)
 
 # -------------------------------------------------
-# Run Server (local dev; Render ignores this)
+# Local run
 # -------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
