@@ -15,7 +15,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # -------------------------------------------------
 # Stripe Setup
 # -------------------------------------------------
-stripe.api_key = "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"
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
