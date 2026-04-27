@@ -15,7 +15,11 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # -------------------------------------------------
 # Stripe Setup
 # -------------------------------------------------
-stripe.api_key = "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_STRIPE_SECRET_KEY"   # sk_live_...
+# Use your real live secret key here (already provided by you)
+stripe.api_key = "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"
+
+# Your live frontend URL
+FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
 # Database Setup
@@ -168,21 +172,20 @@ def wakeup():
     return "awake", 200
 
 # -------------------------------------------------
-# Stripe Checkout Session (FULLY UPGRADED)
+# Stripe Checkout Session
 # -------------------------------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
-    data = request.get_json()
+    data = request.get_json() or {}
 
     event_title = data.get("event_title", "Event")
-    standard = int(data.get("standard", 0))
-    vip = int(data.get("vip", 0))
-    vvip = int(data.get("vvip", 0))
-    addons = data.get("addons", [])
-    pricing = data.get("pricing", {})
+    standard = int(data.get("standard", 0) or 0)
+    vip = int(data.get("vip", 0) or 0)
+    vvip = int(data.get("vvip", 0) or 0)
+    pricing = data.get("pricing", {}) or {}
 
-    # Fallback price (old system)
-    base_price = int(data.get("price", 0))
+    # Fallback base ticket price (from event)
+    base_price = int(data.get("price", 0) or 0)
 
     if standard + vip + vvip == 0:
         return jsonify({"error": "No tickets selected"}), 400
@@ -194,7 +197,7 @@ def create_checkout_session():
         line_items.append({
             "price_data": {
                 "currency": "gbp",
-                "product_data": {"name": event_title + " – Standard Ticket"},
+                "product_data": {"name": f"{event_title} – Standard Ticket"},
                 "unit_amount": base_price * 100
             },
             "quantity": standard
@@ -205,7 +208,7 @@ def create_checkout_session():
         line_items.append({
             "price_data": {
                 "currency": "gbp",
-                "product_data": {"name": event_title + " – VIP Ticket"},
+                "product_data": {"name": f"{event_title} – VIP Ticket"},
                 "unit_amount": base_price * 2 * 100
             },
             "quantity": vip
@@ -216,69 +219,70 @@ def create_checkout_session():
         line_items.append({
             "price_data": {
                 "currency": "gbp",
-                "product_data": {"name": event_title + " – VVIP Ticket"},
+                "product_data": {"name": f"{event_title} – VVIP Ticket"},
                 "unit_amount": base_price * 4 * 100
             },
             "quantity": vvip
         })
 
     # Add-ons
-    if pricing and "addonsBreakdown" in pricing:
-        for addon in pricing["addonsBreakdown"]:
-            line_items.append({
-                "price_data": {
-                    "currency": "gbp",
-                    "product_data": {"name": addon["label"]},
-                    "unit_amount": int(addon["amount"] * 100)
-                },
-                "quantity": 1
-            })
+    addons_breakdown = pricing.get("addonsBreakdown", []) or []
+    for addon in addons_breakdown:
+        amount = addon.get("amount", 0) or 0
+        label = addon.get("label", "Add-on")
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": label},
+                "unit_amount": int(amount * 100)
+            },
+            "quantity": 1
+        })
 
     # Booking fee
-    if pricing and "bookingFee" in pricing:
+    booking_fee = pricing.get("bookingFee", 0) or 0
+    if booking_fee > 0:
         line_items.append({
             "price_data": {
                 "currency": "gbp",
                 "product_data": {"name": "Booking Fee"},
-                "unit_amount": int(pricing["bookingFee"] * 100)
+                "unit_amount": int(booking_fee * 100)
             },
             "quantity": 1
         })
 
     # VAT
-    if pricing and "vat" in pricing:
+    vat = pricing.get("vat", 0) or 0
+    if vat > 0:
         line_items.append({
             "price_data": {
                 "currency": "gbp",
                 "product_data": {"name": "VAT (20%)"},
-                "unit_amount": int(pricing["vat"] * 100)
+                "unit_amount": int(vat * 100)
             },
             "quantity": 1
         })
 
-    # Discount (negative line item)
-    if pricing and "discount" in pricing and pricing["discount"] > 0:
-        line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {"name": "Discount"},
-                "unit_amount": -int(pricing["discount"] * 100)
-            },
-            "quantity": 1
-        })
+    # IMPORTANT: no negative line items (Stripe doesn't allow that)
+    # If you want discounts, use Stripe coupons/promo codes instead.
+
+    if not line_items:
+        return jsonify({"error": "No line items generated"}), 400
 
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             mode="payment",
             line_items=line_items,
-            success_url="YOUR_FRONTEND_URL/success.html",
-            cancel_url="YOUR_FRONTEND_URL/checkout.html"
+            success_url=f"{FRONTEND_URL}/success.html",
+            cancel_url=f"{FRONTEND_URL}/checkout.html"
         )
 
         return jsonify({"sessionId": session.id})
 
     except Exception as e:
+        # Log to server console for debugging on Render
+        print("STRIPE ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
 # -------------------------------------------------
@@ -293,7 +297,7 @@ def serve_files(filename):
     return send_from_directory(os.getcwd(), filename)
 
 # -------------------------------------------------
-# Run Server (Render ignores this)
+# Run Server (local dev; Render ignores this)
 # -------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
