@@ -5,6 +5,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import stripe
 import os
 
+# ✅ NEW IMPORTS (email verification)
+import random
+import smtplib
+from email.mime.text import MIMEText
+
 app = Flask(__name__)
 
 # -------------------------------------------------
@@ -71,12 +76,47 @@ def register():
         return jsonify({"success": False, "message": "Email already registered"}), 400
 
     except Exception as e:
-        print("REGISTER ERROR:", e)  # 🔥 will show real issue in terminal
+        print("REGISTER ERROR:", e)
         return jsonify({"success": False, "message": "Server error"}), 500
 
     finally:
         if conn:
             conn.close()
+
+
+# -------------------------------------------------
+# ✅ EMAIL VERIFICATION ROUTE (NEW)
+# -------------------------------------------------
+@app.route("/send_code", methods=["POST"])
+def send_code():
+    data = request.get_json() or {}
+    email = data.get("email")
+
+    if not email:
+        return jsonify({"success": False, "message": "Email required"}), 400
+
+    # Generate 6-digit code
+    code = str(random.randint(100000, 999999))
+
+    try:
+        msg = MIMEText(f"Your PLANOVA verification code is: {code}")
+        msg["Subject"] = "PLANOVA Verification Code"
+        msg["From"] = os.getenv("EMAIL_ADDRESS")
+        msg["To"] = email
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(
+                os.getenv("EMAIL_ADDRESS"),
+                os.getenv("EMAIL_APP_PASSWORD")
+            )
+            server.send_message(msg)
+
+        # ⚠️ Returning code (frontend expects this)
+        return jsonify({"success": True, "code": code})
+
+    except Exception as e:
+        print("EMAIL ERROR:", e)
+        return jsonify({"success": False, "message": "Failed to send email"}), 500
 
 
 @app.route("/login", methods=["POST"])
