@@ -16,13 +16,14 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Stripe Setup
 # -------------------------------------------------
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
 # DB Setup
 # -------------------------------------------------
 def init_db():
-    conn = sqlite3.connect("users.db")
+    conn = sqlite3.connect("users.db", timeout=10)
     c = conn.cursor()
     c.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -52,18 +53,31 @@ def register():
 
     hashed_pw = generate_password_hash(password)
 
+    conn = None
     try:
-        conn = sqlite3.connect("users.db")
+        conn = sqlite3.connect("users.db", timeout=10)
         c = conn.cursor()
+
         c.execute("""
             INSERT INTO users (full_name, email, password)
             VALUES (?, ?, ?)
         """, (full_name, email, hashed_pw))
+
         conn.commit()
-        conn.close()
+
         return jsonify({"success": True, "message": "Account created!"})
+
     except sqlite3.IntegrityError:
         return jsonify({"success": False, "message": "Email already registered"}), 400
+
+    except Exception as e:
+        print("REGISTER ERROR:", e)  # 🔥 will show real issue in terminal
+        return jsonify({"success": False, "message": "Server error"}), 500
+
+    finally:
+        if conn:
+            conn.close()
+
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -71,7 +85,7 @@ def login():
     email = data.get("email")
     password = data.get("password")
 
-    conn = sqlite3.connect("users.db")
+    conn = sqlite3.connect("users.db", timeout=10)
     cur = conn.cursor()
     cur.execute("SELECT full_name, password FROM users WHERE email = ?", (email,))
     row = cur.fetchone()
@@ -87,13 +101,14 @@ def login():
 
     return jsonify({"success": True, "full_name": full_name})
 
+
 @app.route("/delete-account", methods=["POST"])
 def delete_account():
     data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
-    conn = sqlite3.connect("users.db")
+    conn = sqlite3.connect("users.db", timeout=10)
     cur = conn.cursor()
 
     cur.execute("SELECT password FROM users WHERE email = ?", (email,))
@@ -115,6 +130,7 @@ def delete_account():
 
     return jsonify({"success": True, "message": "Account deleted"})
 
+
 @app.route("/change-password", methods=["POST"])
 def change_password():
     data = request.get_json() or {}
@@ -122,7 +138,7 @@ def change_password():
     old_password = data.get("old_password")
     new_password = data.get("new_password")
 
-    conn = sqlite3.connect("users.db")
+    conn = sqlite3.connect("users.db", timeout=10)
     cur = conn.cursor()
 
     cur.execute("SELECT password FROM users WHERE email = ?", (email,))
@@ -151,12 +167,14 @@ def change_password():
 
     return jsonify({"success": True, "message": "Password updated"})
 
+
 # -------------------------------------------------
 # Wakeup
 # -------------------------------------------------
 @app.route("/wakeup")
 def wakeup():
     return "awake", 200
+
 
 # -------------------------------------------------
 # Helpers
@@ -169,6 +187,7 @@ def safe_int(value, default=0):
     except (TypeError, ValueError):
         return default
 
+
 def safe_float(value, default=0.0):
     try:
         if value is None or value == "":
@@ -177,13 +196,14 @@ def safe_float(value, default=0.0):
     except (TypeError, ValueError):
         return default
 
+
 # -------------------------------------------------
 # Stripe Checkout Session
 # -------------------------------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json() or {}
-    print("INCOMING CHECKOUT DATA:", data)  # debug in Render logs
+    print("INCOMING CHECKOUT DATA:", data)
 
     event_title = data.get("event_title", "Event")
 
@@ -199,7 +219,6 @@ def create_checkout_session():
 
     line_items = []
 
-    # Standard
     if standard > 0:
         line_items.append({
             "price_data": {
@@ -210,7 +229,6 @@ def create_checkout_session():
             "quantity": standard
         })
 
-    # VIP
     if vip > 0:
         line_items.append({
             "price_data": {
@@ -221,7 +239,6 @@ def create_checkout_session():
             "quantity": vip
         })
 
-    # VVIP
     if vvip > 0:
         line_items.append({
             "price_data": {
@@ -232,7 +249,6 @@ def create_checkout_session():
             "quantity": vvip
         })
 
-    # Add-ons
     addons_breakdown = pricing.get("addonsBreakdown") or []
     for addon in addons_breakdown:
         label = addon.get("label", "Add-on")
@@ -246,7 +262,6 @@ def create_checkout_session():
             "quantity": 1
         })
 
-    # Booking fee
     booking_fee = safe_float(pricing.get("bookingFee"), 0.0)
     if booking_fee > 0:
         line_items.append({
@@ -258,7 +273,6 @@ def create_checkout_session():
             "quantity": 1
         })
 
-    # VAT
     vat = safe_float(pricing.get("vat"), 0.0)
     if vat > 0:
         line_items.append({
@@ -284,8 +298,9 @@ def create_checkout_session():
         return jsonify({"sessionId": session.id})
 
     except Exception as e:
-        print("STRIPE ERROR:", e)  # shows in Render logs
+        print("STRIPE ERROR:", e)
         return jsonify({"error": str(e)}), 500
+
 
 # -------------------------------------------------
 # Static files
@@ -297,6 +312,7 @@ def serve_index():
 @app.route("/<path:filename>")
 def serve_files(filename):
     return send_from_directory(os.getcwd(), filename)
+
 
 # -------------------------------------------------
 # Local run
