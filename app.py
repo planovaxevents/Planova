@@ -1,17 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 import stripe
 import os
-
-# DBs
-import sqlite3
-import psycopg2
-
-# Email verification
-import random
-import smtplib
-from email.mime.text import MIMEText
 
 app = Flask(__name__)
 
@@ -24,52 +16,30 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Stripe Setup
 # -------------------------------------------------
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
-# DATABASE SETUP (HYBRID)
+# DB Setup
 # -------------------------------------------------
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-def get_conn():
-    if DATABASE_URL:
-        return psycopg2.connect(DATABASE_URL)
-    else:
-        return sqlite3.connect("users.db", timeout=10)
-
-def is_postgres():
-    return DATABASE_URL is not None
-
 def init_db():
-    conn = get_conn()
-    cur = conn.cursor()
-
-    if is_postgres():
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                full_name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
-        """)
-    else:
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                full_name TEXT NOT NULL,
-                email TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL
-            )
-        """)
-
+    conn = sqlite3.connect("users.db", timeout=10)
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )
+    """)
     conn.commit()
     conn.close()
 
 init_db()
 
 # -------------------------------------------------
-# REGISTER
+# Auth routes
 # -------------------------------------------------
 @app.route("/register", methods=["POST"])
 def register():
@@ -85,83 +55,39 @@ def register():
 
     conn = None
     try:
-        conn = get_conn()
+        conn = sqlite3.connect("users.db", timeout=10)
         c = conn.cursor()
 
-        if is_postgres():
-            c.execute("""
-                INSERT INTO users (full_name, email, password)
-                VALUES (%s, %s, %s)
-            """, (full_name, email, hashed_pw))
-        else:
-            c.execute("""
-                INSERT INTO users (full_name, email, password)
-                VALUES (?, ?, ?)
-            """, (full_name, email, hashed_pw))
+        c.execute("""
+            INSERT INTO users (full_name, email, password)
+            VALUES (?, ?, ?)
+        """, (full_name, email, hashed_pw))
 
         conn.commit()
 
         return jsonify({"success": True, "message": "Account created!"})
 
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        print("REGISTER ERROR:", e)
+    except sqlite3.IntegrityError:
         return jsonify({"success": False, "message": "Email already registered"}), 400
+
+    except Exception as e:
+        print("REGISTER ERROR:", e)  # 🔥 will show real issue in terminal
+        return jsonify({"success": False, "message": "Server error"}), 500
 
     finally:
         if conn:
             conn.close()
 
-# -------------------------------------------------
-# EMAIL VERIFICATION
-# -------------------------------------------------
-@app.route("/send_code", methods=["POST"])
-def send_code():
-    data = request.get_json() or {}
-    email = data.get("email")
 
-    if not email:
-        return jsonify({"success": False, "message": "Email required"}), 400
-
-    code = str(random.randint(100000, 999999))
-
-    try:
-        msg = MIMEText(f"Your PLANOVA verification code is: {code}")
-        msg["Subject"] = "PLANOVA Verification Code"
-        msg["From"] = os.getenv("EMAIL_ADDRESS")
-        msg["To"] = email
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(
-                os.getenv("EMAIL_ADDRESS"),
-                os.getenv("EMAIL_APP_PASSWORD")
-            )
-            server.send_message(msg)
-
-        return jsonify({"success": True, "code": code})
-
-    except Exception as e:
-        print("EMAIL ERROR:", e)
-        return jsonify({"success": False, "message": "Failed to send email"}), 500
-
-# -------------------------------------------------
-# LOGIN
-# -------------------------------------------------
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
-    conn = get_conn()
+    conn = sqlite3.connect("users.db", timeout=10)
     cur = conn.cursor()
-
-    if is_postgres():
-        cur.execute("SELECT full_name, password FROM users WHERE email = %s", (email,))
-    else:
-        cur.execute("SELECT full_name, password FROM users WHERE email = ?", (email,))
-
+    cur.execute("SELECT full_name, password FROM users WHERE email = ?", (email,))
     row = cur.fetchone()
     conn.close()
 
@@ -175,23 +101,17 @@ def login():
 
     return jsonify({"success": True, "full_name": full_name})
 
-# -------------------------------------------------
-# DELETE ACCOUNT
-# -------------------------------------------------
+
 @app.route("/delete-account", methods=["POST"])
 def delete_account():
     data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
-    conn = get_conn()
+    conn = sqlite3.connect("users.db", timeout=10)
     cur = conn.cursor()
 
-    if is_postgres():
-        cur.execute("SELECT password FROM users WHERE email = %s", (email,))
-    else:
-        cur.execute("SELECT password FROM users WHERE email = ?", (email,))
-
+    cur.execute("SELECT password FROM users WHERE email = ?", (email,))
     row = cur.fetchone()
 
     if not row:
@@ -204,19 +124,13 @@ def delete_account():
         conn.close()
         return jsonify({"success": False, "message": "Incorrect password"}), 400
 
-    if is_postgres():
-        cur.execute("DELETE FROM users WHERE email = %s", (email,))
-    else:
-        cur.execute("DELETE FROM users WHERE email = ?", (email,))
-
+    cur.execute("DELETE FROM users WHERE email = ?", (email,))
     conn.commit()
     conn.close()
 
     return jsonify({"success": True, "message": "Account deleted"})
 
-# -------------------------------------------------
-# CHANGE PASSWORD
-# -------------------------------------------------
+
 @app.route("/change-password", methods=["POST"])
 def change_password():
     data = request.get_json() or {}
@@ -224,14 +138,10 @@ def change_password():
     old_password = data.get("old_password")
     new_password = data.get("new_password")
 
-    conn = get_conn()
+    conn = sqlite3.connect("users.db", timeout=10)
     cur = conn.cursor()
 
-    if is_postgres():
-        cur.execute("SELECT password FROM users WHERE email = %s", (email,))
-    else:
-        cur.execute("SELECT password FROM users WHERE email = ?", (email,))
-
+    cur.execute("SELECT password FROM users WHERE email = ?", (email,))
     row = cur.fetchone()
 
     if not row:
@@ -246,15 +156,17 @@ def change_password():
 
     new_hashed = generate_password_hash(new_password)
 
-    if is_postgres():
-        cur.execute("UPDATE users SET password = %s WHERE email = %s", (new_hashed, email))
-    else:
-        cur.execute("UPDATE users SET password = ? WHERE email = ?", (new_hashed, email))
+    cur.execute("""
+        UPDATE users
+        SET password = ?
+        WHERE email = ?
+    """, (new_hashed, email))
 
     conn.commit()
     conn.close()
 
     return jsonify({"success": True, "message": "Password updated"})
+
 
 # -------------------------------------------------
 # Wakeup
@@ -263,34 +175,135 @@ def change_password():
 def wakeup():
     return "awake", 200
 
+
 # -------------------------------------------------
-# Stripe Checkout
+# Helpers
+# -------------------------------------------------
+def safe_int(value, default=0):
+    try:
+        if value is None or value == "":
+            return default
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def safe_float(value, default=0.0):
+    try:
+        if value is None or value == "":
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+# -------------------------------------------------
+# Stripe Checkout Session
 # -------------------------------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json() or {}
+    print("INCOMING CHECKOUT DATA:", data)
 
-    line_items = [{
-        "price_data": {
-            "currency": "gbp",
-            "product_data": {"name": "Event Ticket"},
-            "unit_amount": 1000
-        },
-        "quantity": 1
-    }]
+    event_title = data.get("event_title", "Event")
 
-    session = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        mode="payment",
-        line_items=line_items,
-        success_url=f"{FRONTEND_URL}/success.html",
-        cancel_url=f"{FRONTEND_URL}/checkout.html"
-    )
+    standard = safe_int(data.get("standard"), 0)
+    vip = safe_int(data.get("vip"), 0)
+    vvip = safe_int(data.get("vvip"), 0)
 
-    return jsonify({"sessionId": session.id})
+    pricing = data.get("pricing") or {}
+    base_price = safe_int(data.get("price"), 0)
+
+    if standard + vip + vvip == 0:
+        return jsonify({"error": "No tickets selected"}), 400
+
+    line_items = []
+
+    if standard > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": f"{event_title} – Standard Ticket"},
+                "unit_amount": base_price * 100
+            },
+            "quantity": standard
+        })
+
+    if vip > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": f"{event_title} – VIP Ticket"},
+                "unit_amount": base_price * 2 * 100
+            },
+            "quantity": vip
+        })
+
+    if vvip > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": f"{event_title} – VVIP Ticket"},
+                "unit_amount": base_price * 4 * 100
+            },
+            "quantity": vvip
+        })
+
+    addons_breakdown = pricing.get("addonsBreakdown") or []
+    for addon in addons_breakdown:
+        label = addon.get("label", "Add-on")
+        amount = safe_float(addon.get("amount"), 0.0)
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": label},
+                "unit_amount": int(amount * 100)
+            },
+            "quantity": 1
+        })
+
+    booking_fee = safe_float(pricing.get("bookingFee"), 0.0)
+    if booking_fee > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": "Booking Fee"},
+                "unit_amount": int(booking_fee * 100)
+            },
+            "quantity": 1
+        })
+
+    vat = safe_float(pricing.get("vat"), 0.0)
+    if vat > 0:
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {"name": "VAT (20%)"},
+                "unit_amount": int(vat * 100)
+            },
+            "quantity": 1
+        })
+
+    if not line_items:
+        return jsonify({"error": "No line items generated"}), 400
+
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=line_items,
+            success_url=f"{FRONTEND_URL}/success.html",
+            cancel_url=f"{FRONTEND_URL}/checkout.html"
+        )
+        return jsonify({"sessionId": session.id})
+
+    except Exception as e:
+        print("STRIPE ERROR:", e)
+        return jsonify({"error": str(e)}), 500
+
 
 # -------------------------------------------------
-# Static
+# Static files
 # -------------------------------------------------
 @app.route("/")
 def serve_index():
@@ -300,8 +313,9 @@ def serve_index():
 def serve_files(filename):
     return send_from_directory(os.getcwd(), filename)
 
+
 # -------------------------------------------------
-# Run
+# Local run
 # -------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

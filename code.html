@@ -90,7 +90,7 @@ async function performRegister(full_name, email, password) {
 
         if (data.success) {
             localStorage.setItem("planova_user", JSON.stringify({
-    name: full_name,
+    full_name: full_name,
     email: email,
     password: password // needed for account features
 }));
@@ -140,7 +140,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
         const userCode = document.getElementById("codeInput").value.trim();
 
         if (!userCode) {
-            error.innerText = "Please Enter The Code Sent To Your Email!";
+            error.innerText = "Please enter a code to continue";
             error.style.display = "block";
             return;
         }
@@ -158,7 +158,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
         }
 
         if (userCode !== generatedCode) {
-            error.innerText = "Invalid Code. Please Try Again!";
+            error.innerText = "Invalid Code, Please Try Again!";
             error.style.display = "block";
             return;
         }

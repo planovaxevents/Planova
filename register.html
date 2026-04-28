@@ -118,22 +118,26 @@ const ruleNumber = document.getElementById("rule-number");
 function validatePassword() {
   const pwd = passwordInput.value;
 
+  // Rules
   const hasLength = pwd.length >= 12 && pwd.length <= 60;
   const hasLower = /[a-z]/.test(pwd);
   const hasUpper = /[A-Z]/.test(pwd);
   const hasNumberOrSpecial = /[0-9!@#$%^&*(),.?":{}|<>]/.test(pwd);
 
+  // Update rule colours
   ruleLength.classList.toggle("valid", hasLength);
   ruleLower.classList.toggle("valid", hasLower);
   ruleUpper.classList.toggle("valid", hasUpper);
   ruleNumber.classList.toggle("valid", hasNumberOrSpecial);
 
+  // Strength score
   let score = 0;
   if (hasLength) score++;
   if (hasLower) score++;
   if (hasUpper) score++;
   if (hasNumberOrSpecial) score++;
 
+  // Update strength bar
   const percent = (score / 4) * 100;
   strengthFill.style.width = percent + "%";
 
@@ -142,11 +146,13 @@ function validatePassword() {
   if (score === 3) strengthFill.style.background = "#ffcc00";
   if (score === 4) strengthFill.style.background = "#00ff88";
 
+  // Disable register button until all rules pass
   registerBtn.disabled = score !== 4;
 }
 
 passwordInput.addEventListener("input", validatePassword);
 
+// Submit handler
 document.getElementById("register-form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -159,13 +165,28 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
     const email = document.getElementById("email").value;
     const password = passwordInput.value;
 
-    // ✅ STORE TEMP DATA FOR VERIFICATION FLOW
-    localStorage.setItem("pending_name", full_name);
-    localStorage.setItem("pending_email", email);
-    localStorage.setItem("pending_password", password);
+    try {
+        const res = await fetch("http://127.0.0.1:5000/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ full_name, email, password })
+        });
 
-    // 👉 GO TO CODE PAGE
-    window.location.href = "code.html";
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem("planova_user", JSON.stringify({
+                name: full_name,
+                email: email
+            }));
+
+            window.location.href = "index.html";
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Unable to connect to server. Make sure your backend is running.");
+    }
 });
 
 // Password toggle
