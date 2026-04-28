@@ -81,7 +81,8 @@ def register():
         c = conn.cursor()
 
         print("📥 Inserting into DB...")
-
+        print("DB FILE EXISTS:", os.path.exists("users.db"))
+        print("DB SIZE:", os.path.getsize("users.db"))
         c.execute("""
             INSERT INTO users (full_name, email, password)
             VALUES (?, ?, ?)
@@ -94,7 +95,7 @@ def register():
         user = c.fetchone()
 
         print("✅ Insert result:", user)
-
+        
         conn.close()
 
         return jsonify({"success": True, "message": "Account created!"})
