@@ -109,68 +109,75 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
     } else if (buttonMode === "continue") {
         const userCode = document.getElementById("codeInput").value.trim();
 
+        // ✅ No code entered
         if (!userCode) {
-    error.innerText = "Please enter a code to continue";
-    error.style.display = "block";
-    return;
-}
-
-if (userCode.length !== 6) {
-    error.innerText = "Code must be 6 digits";
-    error.style.display = "block";
-    return;
-}
+            error.innerText = "Please enter a code to continue";
             error.style.display = "block";
             return;
         }
 
+        // ✅ Must be 6 digits
+        if (userCode.length !== 6) {
+            error.innerText = "Code must be 6 digits";
+            error.style.display = "block";
+            return;
+        }
+
+        // ✅ Safety check
+        if (!generatedCode) {
+            error.innerText = "You must request a code first";
+            error.style.display = "block";
+            return;
+        }
+
+        // ✅ Incorrect code
         if (userCode !== generatedCode) {
             error.innerText = "Invalid Code, Please Try Again!";
             error.style.display = "block";
             return;
         }
 
-        // SUCCESS → redirect to register page
+        // ✅ SUCCESS
         success.innerText = "Code verified!";
         success.style.display = "block";
 
         try {
-    const res = await fetch("http://127.0.0.1:5000/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            full_name: localStorage.getItem("pending_name"),
-            email: localStorage.getItem("pending_email"),
-            password: localStorage.getItem("pending_password")
-        })
-    });
+            const res = await fetch("/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    full_name: localStorage.getItem("pending_name"),
+                    email: localStorage.getItem("pending_email"),
+                    password: localStorage.getItem("pending_password")
+                })
+            });
 
-    const data = await res.json();
+            const data = await res.json();
 
-    if (data.success) {
-        success.innerText = "Account created successfully!";
-        success.style.display = "block";
+            if (data.success) {
+                success.innerText = "Account created successfully!";
+                success.style.display = "block";
 
-        // Optional: clear temp data
-        localStorage.removeItem("pending_name");
-        localStorage.removeItem("pending_email");
-        localStorage.removeItem("pending_password");
+                // Clear temp data
+                localStorage.removeItem("pending_name");
+                localStorage.removeItem("pending_email");
+                localStorage.removeItem("pending_password");
 
-        setTimeout(() => {
-            window.location.href = "signin.html";
-        }, 1200);
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1200);
 
-    } else {
-        error.innerText = data.message;
-        error.style.display = "block";
+            } else {
+                error.innerText = data.message;
+                error.style.display = "block";
+            }
+
+        } catch (err) {
+            error.innerText = "Something went wrong. Please try again.";
+            error.style.display = "block";
+        }
     }
-
-} catch (err) {
-    error.innerText = "Something went wrong. Please try again.";
-    error.style.display = "block";
-}
-    }
-);
+});
 </script>
 
 </body>
