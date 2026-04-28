@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    let user = JSON.parse(localStorage.getItem("planova_user"));
+    const user = JSON.parse(localStorage.getItem("planova_user"));
     const navRight = document.querySelector(".nav-right");
 
     if (!navRight) return;
