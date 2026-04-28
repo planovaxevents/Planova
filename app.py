@@ -4,8 +4,11 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 import stripe
 import os
+import random
+import smtplib
 
 app = Flask(__name__)
+print(">>> THIS IS THE CORRECT BACKEND FILE <<<")
 
 # -------------------------------------------------
 # CORS
@@ -16,7 +19,20 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Stripe Setup
 # -------------------------------------------------
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-FRONTEND_URL = "https://planova-lwj9.onrender.com"
+
+# Auto-detect environment (LOCAL vs RENDER)
+if os.getenv("RENDER"):
+    FRONTEND_URL = "https://planova-lwj9.onrender.com"
+else:
+    FRONTEND_URL = "http://127.0.0.1:5000"
+
+print("USING FRONTEND_URL:", FRONTEND_URL)
+
+# -------------------------------------------------
+# Email Setup (Gmail)
+# -------------------------------------------------
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS", "planovaxevent@gmail.com")
+EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")  # your Gmail App Password
 
 # -------------------------------------------------
 # DB Setup
@@ -152,6 +168,43 @@ def change_password():
     return jsonify({"success": True, "message": "Password updated"})
 
 # -------------------------------------------------
+# Email verification route
+# -------------------------------------------------
+@app.route("/send_code", methods=["POST"])
+def send_code():
+    data = request.get_json() or {}
+    email = data.get("email")
+
+    if not email:
+        return jsonify({"success": False, "message": "No email provided"}), 400
+
+    if not EMAIL_APP_PASSWORD:
+        return jsonify({"success": False, "message": "Email service not configured"}), 500
+
+    # Generate 6-digit code, zero-padded
+    code = f"{random.randint(0, 999999):06d}"
+
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_APP_PASSWORD)
+
+        subject = "PLANOVA Email Verification Code"
+        body = f"Your PLANOVA verification code is: {code}\n\nIf you did not request this, you can ignore this email."
+        message = f"Subject: {subject}\n\n{body}"
+
+        server.sendmail(EMAIL_ADDRESS, email, message)
+        server.quit()
+
+        # For your current frontend flow, we return the code so it can validate on the client.
+        # Later, if you want, we can move validation fully to the backend.
+        return jsonify({"success": True, "code": code})
+
+    except Exception as e:
+        print("EMAIL ERROR:", e)
+        return jsonify({"success": False, "message": "Failed to send email"}), 500
+
+# -------------------------------------------------
 # Wakeup
 # -------------------------------------------------
 @app.route("/wakeup")
@@ -183,7 +236,7 @@ def safe_float(value, default=0.0):
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json() or {}
-    print("INCOMING CHECKOUT DATA:", data)  # debug in Render logs
+    print("INCOMING CHECKOUT DATA:", data)
 
     event_title = data.get("event_title", "Event")
 
@@ -284,7 +337,7 @@ def create_checkout_session():
         return jsonify({"sessionId": session.id})
 
     except Exception as e:
-        print("STRIPE ERROR:", e)  # shows in Render logs
+        print("STRIPE ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
 # -------------------------------------------------

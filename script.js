@@ -2,213 +2,36 @@
 // STOCK EVENT DATA (UPGRADED + MAP COORDINATES)
 // ===============================
 const events = [
-  {
+
+{
     id: 1,
-    title: "NGONE 90's - 00's Throwback",
+    title: "NG-ONE THROWBACK SEASON",
     category: "Clubbing",
-    date: "2026-05-02",
-    dateLabel: "Fri 2 May",
-    dateISO: "2026-05-02T22:00:00",
-    time: "22:00–04:00",
-    location: "Nottingham",
-    price: 12,
-    priceLabel: "From £12.00",
-    image: "https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg",
-    description: "A high‑energy night of house and techno with immersive lighting and top DJs.",
+    date: "2026-04-27",
+    dateLabel: "Sat 15th August",
+    dateISO: "2026-08-15T00:17:00",
+    time: "18:00 - 02:00",
+    location: "NG-ONE Nottingham",
+    price: 10,
+    priceLabel: "From £10",
+    image: "ChatGPT Image Apr 28, 2026, 12_13_05 AM.png",
+    description: "A Sensationl Night You Wont Forget",
 
     venue: {
-      name: "NG-One Nottingham",
-      lat: 52.95487222627411,
-      lng: -1.1417576293234528
+      name: "NG-ONE",
+      lat: 52.95487326388578,
+      lng: -1.1417604134232073
     },
 
-    venueCapacity: 900,
+    venueCapacity: 1200,
     ageRestriction: "18+",
-    dressCode: "Smart casual",
-    genres: ["House", "Techno", "Throwbacks"],
+    dressCode: "90s - 00s",
+    genres: ["Pop", "Hip-Hop", "Rap"],
 
     ticketAvailability: {
-      standard: 150,
-      vip: 40,
-      vvip: 10
-    },
-
-    addons: {
-      queue_jump: true,
-      drinks_tokens: true,
-      afterparty: false,
-      merch: true
-    },
-
-    promoCodes: {
-      "NGONE10": 0.10
-    },
-
-    reviews: [
-      { stars: 5, text: "Unreal throwback vibes!", when: "Last month" },
-      { stars: 4, text: "DJ set was insane.", when: "2 weeks ago" }
-    ]
-  },
-
-
-
-// -----------------------------------------------------------------------------------------------------------------------//
-  
-
-
-  {
-  id: 2,
-  title: "Cell - Fiesta Fuego",
-  category: "Clubbing", // or Live Music, etc.
-  date: "2026-06-10",
-  dateLabel: "Sat 10 Jun",
-  dateISO: "2026-06-10T18:00:00",
-  time: "18:00–23:00",
-  location: "Nottingham",
-  price: 15,
-  priceLabel: "From £15.00",
-  image: "https://images.pexels.com/photos/167404/pexels-photo-167404.jpeg",
-  description: "Live bands, cocktails and sunset views over the city.",
-
-  venue: {
-    name: "Cell Nottingham",
-    lat: 52.953200,
-    lng: -1.150900
-  },
-
-  venueCapacity: 350,
-  ageRestriction: "18+",
-  dressCode: "Casual / Summer",
-  genres: ["Latin", "Live Bands", "Summer Vibes"],
-
-  ticketAvailability: {
-    standard: 80,
-    vip: 20,
-    vvip: 0
-  },
-
-  addons: {
-    queue_jump: false,
-    drinks_tokens: true,
-    afterparty: false,
-    merch: false
-  },
-
-  promoCodes: {},
-
-  reviews: [
-    { stars: 5, text: "Amazing atmosphere!", when: "3 weeks ago" }
-  ],
-
-  // 🔥 NEW: per‑event content
-  highlights: [
-    "Live Latin bands all evening",
-    "Rooftop sunset views over Nottingham",
-    "Signature rum cocktails and summer décor"
-  ],
-
-  whatsIncluded: [
-    "Standard entry to Cell Nottingham",
-    "Access to all live band performances",
-    "Cloakroom available on site (extra charge)"
-  ],
-
-  venueAmenities: [
-    "Rooftop terrace with city views",
-    "Multiple bars and cocktail stations",
-    "Outdoor heaters and covered seating",
-    "Nearby tram and bus connections"
-  ]
-},
-
-
-  // -----------------------------------------------------------------------------------------------------------------------//
-  
-
-
-  {
-    id: 3,
-    title: "Rock City - Asian Night Out",
-    category: "Festival",
-    date: "2026-07-21",
-    dateLabel: "Sun 21 Jul",
-    dateISO: "2026-07-21T12:00:00",
-    time: "12:00–23:00",
-    location: "Nottingham",
-    price: 35,
-    priceLabel: "From £35.00",
-    image: "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg",
-    description: "A full‑day outdoor festival featuring bassline, DnB and UKG artists.",
-
-    venue: {
-      name: "Rock City Nottingham",
-      lat: 52.956600,
-      lng: -1.154900
-    },
-
-    venueCapacity: 6000,
-    ageRestriction: "16+",
-    dressCode: "Festival wear",
-    genres: ["Bassline", "DnB", "UKG"],
-
-    ticketAvailability: {
-      standard: 1200,
-      vip: 300,
-      vvip: 60
-    },
-
-    addons: {
-      queue_jump: true,
-      drinks_tokens: true,
-      afterparty: true,
-      merch: true
-    },
-
-    promoCodes: {
-      "FEST15": 0.15
-    },
-
-    reviews: [
-      { stars: 5, text: "Massive lineup!", when: "1 month ago" },
-      { stars: 4, text: "VIP lounge was worth it.", when: "2 weeks ago" }
-    ]
-  },
-
-
-
-  // -----------------------------------------------------------------------------------------------------------------------//
-  
-
-
-  {
-    id: 4,
-    title: "Mojos - Students Off School",
-    category: "Student Night",
-    date: "2026-04-28",
-    dateLabel: "Wed 28 Apr",
-    dateISO: "2026-04-28T22:00:00",
-    time: "22:00–03:00",
-    location: "Nottingham",
-    price: 5,
-    priceLabel: "From £5.00",
-    image: "https://images.pexels.com/photos/2747441/pexels-photo-2747441.jpeg",
-    description: "A night of 2000s and 2010s throwback hits for students.",
-
-    venue: {
-      name: "Mojos Nottingham",
-      lat: 52.953900,
-      lng: -1.152300
-    },
-
-    venueCapacity: 1100,
-    ageRestriction: "18+ (Student ID required)",
-    dressCode: "Anything goes",
-    genres: ["Throwbacks", "RnB", "Chart"],
-
-    ticketAvailability: {
-      standard: 300,
-      vip: 40,
-      vvip: 0
+      standard: 1190,
+      vip: 9,
+      vvip: 1
     },
 
     addons: {
@@ -219,157 +42,158 @@ const events = [
     },
 
     promoCodes: {
-      "STUDENT5": 0.05
+      "NGONE10": 0.40
     },
 
+    // ✅ add unique lists (optional but recommended)
+    highlights: [
+      "",
+      "",
+      ""
+    ],
+    whatsIncluded: [
+      "",
+      "",
+      ""
+    ],
+    venueAmenities: [
+      "",
+      "",
+      ""
+    ],
+
     reviews: [
-      { stars: 5, text: "Best student night in the city!", when: "Last week" }
+      { stars: 5, text: "", when: "" },
+      { stars: 4, text: "", when: "" }
     ]
   },
 
-
-
   // -----------------------------------------------------------------------------------------------------------------------//
-  
 
-
-  {
-    id: 5,
-    title: "INK - Tech House Takeover",
-    category: "Clubbing",
-    date: "2026-05-18",
-    dateLabel: "Sat 18 May",
-    dateISO: "2026-05-18T22:00:00",
-    time: "22:00–05:00",
-    location: "London",
-    price: 22,
-    priceLabel: "From £22.00",
-    image: "https://images.pexels.com/photos/3586968/pexels-photo-3586968.jpeg",
-    description: "A massive tech‑house takeover in the heart of London featuring top UK DJs.",
-
-    venue: {
-      name: "INK London",
-      lat: 51.509865,
-      lng: -0.118092
-    },
-
-    venueCapacity: 1500,
-    ageRestriction: "18+",
-    dressCode: "Smart / Clubwear",
-    genres: ["Tech House", "House"],
-
-    ticketAvailability: {
-      standard: 200,
-      vip: 60,
-      vvip: 20
-    },
-
-    addons: {
-      queue_jump: true,
-      drinks_tokens: true,
-      afterparty: true,
-      merch: true
-    },
-
-    promoCodes: {
-      "INK20": 0.20
-    },
-
-    reviews: [
-      { stars: 5, text: "London energy was unreal!", when: "2 weeks ago" }
-    ]
-  },
-
-
-
-  // -----------------------------------------------------------------------------------------------------------------------//
-  
-
-
-  {
-    id: 6,
-    title: "Manchester Indie Live – Northern Sound",
-    category: "Live Music",
-    date: "2026-06-14",
-    dateLabel: "Sun 14 Jun",
-    dateISO: "2026-06-14T19:00:00",
-    time: "19:00–23:30",
-    location: "Manchester",
-    price: 18,
-    priceLabel: "From £18.00",
-    image: "https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg",
-    description: "Manchester’s biggest indie night returns with live bands and local talent.",
-
-    venue: {
-      name: "Manchester Academy",
-      lat: 53.467200,
-      lng: -2.233400
-    },
-
-    venueCapacity: 500,
-    ageRestriction: "18+",
-    dressCode: "Casual",
-    genres: ["Indie", "Rock"],
-
-    ticketAvailability: {
-      standard: 120,
-      vip: 20,
-      vvip: 0
-    },
-
-    addons: {
-      queue_jump: false,
-      drinks_tokens: true,
-      afterparty: false,
-      merch: false
-    },
-
-    promoCodes: {},
-
-    reviews: [
-      { stars: 5, text: "Incredible live bands!", when: "Last month" }
-    ]
-  }
-];
-
-
-
-// -----------------------------------------------------------------------------------------------------------------------//
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function loadVenueMap(lat, lng) {
-    const mapContainer = document.getElementById("venue-map");
-    if (!mapContainer) return;
-
-    // Reset container (fixes switching events)
-    mapContainer.innerHTML = "";
-
-    const map = L.map("venue-map").setView([lat, lng], 15);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "© OpenStreetMap"
-    }).addTo(map);
-
-    L.marker([lat, lng]).addTo(map);
+]
+// ===============================
+// Ticket availability (DEMO using localStorage)
+// ===============================
+function availabilityKey(eventId) {
+  return "planova_availability_" + eventId;
 }
 
+function getAvailabilityForEvent(ev) {
+  // Start with localStorage copy if present, otherwise use ev.ticketAvailability
+  try {
+    const stored = localStorage.getItem(availabilityKey(ev.id));
+    if (stored) return JSON.parse(stored);
+  } catch (e) {}
+
+  // default fallback
+  return JSON.parse(JSON.stringify(ev.ticketAvailability || { standard: 0, vip: 0, vvip: 0 }));
+}
+
+function saveAvailabilityForEvent(eventId, availabilityObj) {
+  try {
+    localStorage.setItem(availabilityKey(eventId), JSON.stringify(availabilityObj));
+  } catch (e) {}
+}
+
+// qtyObj example: { standard: 2, vip: 0, vvip: 1 }
+function canPurchaseTickets(ev, qtyObj) {
+  const a = getAvailabilityForEvent(ev);
+
+  const s = qtyObj.standard || 0;
+  const v = qtyObj.vip || 0;
+  const vv = qtyObj.vvip || 0;
+
+  return (
+    s >= 0 && v >= 0 && vv >= 0 &&
+    a.standard >= s &&
+    a.vip >= v &&
+    a.vvip >= vv
+  );
+}
+
+function decrementTickets(ev, qtyObj) {
+  const a = getAvailabilityForEvent(ev);
+
+  a.standard -= (qtyObj.standard || 0);
+  a.vip -= (qtyObj.vip || 0);
+  a.vvip -= (qtyObj.vvip || 0);
+
+  // Never below 0
+  a.standard = Math.max(0, a.standard);
+  a.vip = Math.max(0, a.vip);
+  a.vvip = Math.max(0, a.vvip);
+
+  saveAvailabilityForEvent(ev.id, a);
+  return a;
+}
+// ===============================
+// Ticket buttons helper (match your event.html script behaviour)
+// ===============================
+function setupTicketButtonElement(btn) {
+  if (!btn) return;
+
+  var user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("planova_user") || "null");
+  } catch (e) {
+    user = null;
+  }
+
+  // Clear previous click to prevent stacking
+  btn.onclick = null;
+
+  if (!user) {
+    btn.textContent = "Create or Sign in to account first!";
+    btn.disabled = false;
+    btn.style.opacity = "0.85";
+    btn.style.cursor = "pointer";
+
+    btn.onclick = function () {
+      try { sessionStorage.setItem("planova_redirect_after_auth", window.location.href); } catch (e) {}
+      window.location.href = "signin.html";
+    };
+  } else {
+    btn.textContent = "Get tickets";
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.style.cursor = "pointer";
+
+    btn.onclick = function () {
+      window.location.href = "gettickets.html";
+    };
+  }
+}
+
+function updateAllTicketButtons() {
+  var buttons = [
+    document.getElementById("get-tickets-btn-main"),
+    document.getElementById("sticky-cta-btn")
+  ];
+
+  buttons.forEach(function (btn) {
+    setupTicketButtonElement(btn);
+  });
+}
+
+// ===============================
+// Venue map (Leaflet)
+// ===============================
+function loadVenueMap(lat, lng) {
+  const mapContainer = document.getElementById("venue-map");
+  if (!mapContainer) return;
+
+  // Reset container (fixes switching events)
+  mapContainer.innerHTML = "";
+
+  const map = L.map("venue-map").setView([lat, lng], 15);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
+
+  L.marker([lat, lng]).addTo(map);
+}
 
 // ===============================
 // RENDER EVENTS INTO SLIDER
@@ -398,7 +222,7 @@ function renderEvents(list) {
       </div>
     `;
 
-    // ⭐ Store event for event.html + gettickets.html
+    // Store event for event.html + gettickets.html
     card.addEventListener("click", () => {
       localStorage.setItem("selected_event", JSON.stringify(ev));
     });
@@ -406,8 +230,6 @@ function renderEvents(list) {
     slider.appendChild(card);
   });
 }
-
-
 
 // ===============================
 // SORTING
@@ -419,7 +241,6 @@ function sortEvents(list, mode) {
   if (mode === "date") arr.sort((a, b) => new Date(a.date) - new Date(b.date));
   return arr;
 }
-
 
 // ===============================
 // SEARCH
@@ -434,18 +255,17 @@ function setupSearch() {
     const q = document.getElementById("search-input").value.toLowerCase();
     const loc = document.getElementById("search-location").value.toLowerCase();
 
-    const results = events.filter(ev =>
-      ev.title.toLowerCase().includes(q) ||
-      ev.category.toLowerCase().includes(q) ||
-      ev.location.toLowerCase().includes(q)
-    ).filter(ev =>
-      loc === "" || ev.location.toLowerCase().includes(loc)
-    );
+    const results = events
+      .filter(ev =>
+        ev.title.toLowerCase().includes(q) ||
+        ev.category.toLowerCase().includes(q) ||
+        ev.location.toLowerCase().includes(q)
+      )
+      .filter(ev => loc === "" || ev.location.toLowerCase().includes(loc));
 
     renderEvents(results);
   });
 }
-
 
 // ===============================
 // DATE FILTERS
@@ -465,7 +285,10 @@ function setupDateFilters() {
   });
 }
 
-
+// ===============================
+// EVENT DETAIL LOADER
+// ✅ now also pushes unique lists into selected_event for event.html
+// ===============================
 function loadEventDetail() {
   if (!window.location.pathname.includes("event.html")) return;
 
@@ -474,7 +297,7 @@ function loadEventDetail() {
   const ev = events.find(e => e.id === id);
   if (!ev) return;
 
-  // Store event for tickets page
+  // Store event for tickets page + event.html script (includes unique lists)
   localStorage.setItem("selected_event", JSON.stringify(ev));
 
   // HERO SECTION
@@ -483,12 +306,8 @@ function loadEventDetail() {
   document.getElementById("badge-age").textContent = ev.ageRestriction;
   document.getElementById("badge-dress").textContent = ev.dressCode;
 
-  document.getElementById("event-meta").textContent =
-    `${ev.dateLabel} · ${ev.time} · ${ev.location}`;
-
-  document.getElementById("event-submeta").textContent =
-    `${ev.venueCapacity} capacity`;
-
+  document.getElementById("event-meta").textContent = `${ev.dateLabel} · ${ev.time} · ${ev.location}`;
+  document.getElementById("event-submeta").textContent = `${ev.venueCapacity} capacity`;
   document.getElementById("event-image").src = ev.image;
 
   // ABOUT SECTION
@@ -501,23 +320,27 @@ function loadEventDetail() {
   // TICKET CARD
   document.getElementById("ticket-price").textContent = ev.priceLabel;
   document.getElementById("ticket-note").textContent = "Prices may vary by ticket type";
-  document.getElementById("get-tickets-btn-main").textContent = "Get Tickets";
 
   // STICKY CTA
   document.getElementById("sticky-cta-title").textContent = ev.title;
   document.getElementById("sticky-cta-price").textContent = ev.priceLabel;
 
-  // ⭐ Load venue map
+  // Venue map
   if (ev.venue && ev.venue.lat && ev.venue.lng) {
     loadVenueMap(ev.venue.lat, ev.venue.lng);
   }
 
-  // ⭐ Dynamic background image
+  // Dynamic background image
   document.body.style.background = `url('${ev.image}') no-repeat center center fixed`;
   document.body.style.backgroundSize = "cover";
+
+  // ✅ Ticket buttons on event page (main + sticky)
+  updateAllTicketButtons();
 }
 
-
+// ===============================
+// DATE FILTER CORE
+// ===============================
 function filterByDate(range) {
   const today = new Date();
   const eventsCopy = [...events];
@@ -562,7 +385,6 @@ function filterByDate(range) {
 // INITIALISE
 // ===============================
 window.addEventListener("DOMContentLoaded", () => {
-
   // HOME PAGE
   if (document.getElementById("events-slider")) {
     renderEvents(events);
@@ -589,7 +411,6 @@ window.addEventListener("DOMContentLoaded", () => {
   loadEventDetail();
 });
 
-
 // ===============================
 // PASSWORD TOGGLE
 // ===============================
@@ -599,7 +420,6 @@ document.querySelectorAll(".toggle-password")?.forEach(btn => {
     input.type = input.type === "password" ? "text" : "password";
   });
 });
-
 
 // ===============================
 // REGISTER FORM (DEMO MODE)
@@ -613,7 +433,6 @@ if (registerForm) {
   });
 }
 
-
 // ===============================
 // COPY LINK BUTTON
 // ===============================
@@ -624,9 +443,6 @@ document.querySelectorAll(".copy-link")?.forEach(btn => {
     setTimeout(() => (btn.textContent = "Copy link"), 1500);
   });
 });
-
-
-
 
 // ===============================
 // TICKET MODAL
@@ -647,7 +463,6 @@ if (closeModal && ticketModal) {
   });
 }
 
-
 // ===============================
 // SLIDER ARROWS
 // ===============================
@@ -664,4 +479,3 @@ if (sliderEl && btnLeft && btnRight) {
     sliderEl.scrollBy({ left: 300, behavior: "smooth" });
   });
 }
-

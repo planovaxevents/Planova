@@ -363,7 +363,7 @@
       background: linear-gradient(90deg, #00ff88, #00cc6a);
       color: #000;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 13px;
       cursor: pointer;
       text-align: center;
       transition: 0.2s;
@@ -451,7 +451,7 @@
 
     .rating-card {
   position: sticky;
-  top: 370px; /* slightly lower so it sits under the ticket card */
+  top: 310px; /* slightly lower so it sits under the ticket card */
   z-index: 5;
 }
 @media (max-width: 768px) {
@@ -600,8 +600,9 @@
         <div class="ticket-price" id="ticket-price"></div>
         <p class="ticket-note" id="ticket-note"></p>
 
-        <button class="btn-primary" id="get-tickets-btn-main"></button>
-        <button class="btn-outline-soft" id="btn-view-details">View ticket types & pricing</button>
+        <button class="btn-primary" id="get-tickets-btn-main">
+
+        </button>
 
         <div class="ticket-meta-small" id="ticket-meta-small"></div>
       </div>
@@ -640,8 +641,12 @@
     return "£" + fixed;
   }
 
+  // ------------------------------
+  // Ticket buttons (same text when signed out, but still routes to sign-in)
+  // ------------------------------
   function setupTicketButtonElement(btn) {
     if (!btn) return;
+
     var user = null;
     try {
       user = JSON.parse(localStorage.getItem("planova_user") || "null");
@@ -649,22 +654,46 @@
       user = null;
     }
 
+    // Clear previous click to prevent stacking
+    btn.onclick = null;
+
     if (!user) {
-      btn.textContent = "Create or sign in to an account first";
-      btn.disabled = true;
-      btn.style.opacity = "0.6";
-      btn.style.cursor = "not-allowed";
+      btn.textContent = "Create or Sign in to account first!";
+      btn.disabled = false;              // clickable
+      btn.style.opacity = "0.85";
+      btn.style.cursor = "pointer";
+
+      btn.onclick = function () {
+        // (optional) remember where they were, so you can bring them back after sign-in
+        try { sessionStorage.setItem("planova_redirect_after_auth", window.location.href); } catch (e) {}
+        window.location.href = "signin.html";
+      };
     } else {
       btn.textContent = "Get tickets";
       btn.disabled = false;
       btn.style.opacity = "1";
       btn.style.cursor = "pointer";
-      btn.addEventListener("click", function () {
+
+      btn.onclick = function () {
         window.location.href = "gettickets.html";
-      });
+      };
     }
   }
 
+  function updateAllTicketButtons() {
+    var buttons = [
+      document.getElementById("get-tickets-btn-main"),
+      document.getElementById("sticky-cta-btn")
+    ];
+
+    buttons.forEach(function (btn) {
+      setupTicketButtonElement(btn);
+    });
+  }
+
+  // ------------------------------
+  // Rating
+  // ------------------------------
   function computeRatingFromReviews(reviews) {
     if (!reviews || !reviews.length) {
       return { score: null, count: 0, snippet: null };
@@ -679,23 +708,26 @@
     return { score: score, count: reviews.length, snippet: snippet };
   }
 
+  // ------------------------------
+  // Category fallback builders (keep these)
+  // ------------------------------
   function buildHighlightsForEvent(ev) {
     var list = [];
 
     if (ev.category === "Festival") {
-      list.push("Multi‑stage outdoor experience");
-      list.push("All‑day lineup of artists and performers");
+      list.push("Multi-stage outdoor experience");
+      list.push("All-day lineup of artists and performers");
       if (ev.venueCapacity && ev.venueCapacity > 5000) {
-        list.push("Large‑scale production and staging");
+        list.push("Large-scale production and staging");
       }
     } else if (ev.category === "Student Night") {
-      list.push("Student‑only offers and drink deals");
+      list.push("Student-only offers and drink deals");
       list.push("Affordable entry and group vibes");
     } else if (ev.category === "Live Music") {
       list.push("Live bands and curated performances");
       list.push("Intimate venue atmosphere");
     } else if (ev.category === "Clubbing") {
-      list.push("Late‑night DJ sets and club production");
+      list.push("Late-night DJ sets and club production");
       list.push("Immersive lighting and sound");
     }
 
@@ -705,7 +737,7 @@
 
     if (ev.addons) {
       if (ev.addons.queue_jump) {
-        list.push("Optional queue‑jump upgrades available");
+        list.push("Optional queue-jump upgrades available");
       }
       if (ev.addons.afterparty) {
         list.push("Afterparty access for selected tickets");
@@ -725,21 +757,21 @@
 
     if (ev.category === "Festival") {
       list.push("Access to all main festival areas");
-      list.push("Full‑day access during opening hours");
+      list.push("Full-day access during opening hours");
     } else if (ev.category === "Live Music") {
       list.push("Access to live performance area");
     } else if (ev.category === "Clubbing") {
       list.push("Access to main dancefloor and bar areas");
     } else if (ev.category === "Student Night") {
-      list.push("Student‑focused music and drink offers");
+      list.push("Student-focused music and drink offers");
     }
 
     if (ev.addons) {
       if (ev.addons.drinks_tokens) {
-        list.push("Optional pre‑paid drinks tokens (add‑on)");
+        list.push("Optional pre-paid drinks tokens (add-on)");
       }
       if (ev.addons.merch) {
-        list.push("Exclusive merch available on site (add‑on)");
+        list.push("Exclusive merch available on site (add-on)");
       }
     }
 
@@ -761,7 +793,7 @@
     }
 
     if (ev.venueCapacity && ev.venueCapacity > 1000) {
-      list.push("Large‑capacity venue with multiple sections");
+      list.push("Large-capacity venue with multiple sections");
     } else {
       list.push("More intimate venue experience");
     }
@@ -784,8 +816,8 @@
         a: "Small bags, phones and essentials are usually allowed. Large bags, glass and outside alcohol are typically not permitted."
       });
       list.push({
-        q: "Is re‑entry allowed?",
-        a: "Re‑entry policies vary by venue. Check your ticket information or arrive prepared to stay for the duration."
+        q: "Is re-entry allowed?",
+        a: "Re-entry policies vary by venue. Check your ticket information or arrive prepared to stay for the duration."
       });
     } else if (ev.category === "Student Night") {
       list.push({
@@ -793,7 +825,7 @@
         a: "Yes, valid student ID is required alongside your ticket for entry."
       });
       list.push({
-        q: "Are non‑students allowed?",
+        q: "Are non-students allowed?",
         a: "Some student nights allow guests. Check the event description or contact the venue."
       });
     } else if (ev.category === "Clubbing") {
@@ -818,12 +850,15 @@
 
     list.push({
       q: "Can I get a refund?",
-      a: "Tickets are generally non‑refundable unless the event is cancelled or rescheduled."
+      a: "Tickets are generally non-refundable unless the event is cancelled or rescheduled."
     });
 
     return list;
   }
 
+  // ------------------------------
+  // Similarity
+  // ------------------------------
   function computeSimilarityScore(base, candidate) {
     var score = 0;
 
@@ -862,6 +897,28 @@
     return score;
   }
 
+  // ------------------------------
+  // Unique per-event lists, with category fallback
+  // (Uses: eventData.highlights, eventData.whatsIncluded, eventData.venueAmenities)
+  // ------------------------------
+  function normaliseList(list) {
+    if (!list || !Array.isArray(list)) return [];
+    return list.filter(Boolean).map(function (x) { return String(x); });
+  }
+
+  function renderList(ulEl, items) {
+    if (!ulEl) return;
+    ulEl.innerHTML = "";
+    for (var i = 0; i < items.length; i++) {
+      var li = document.createElement("li");
+      li.textContent = items[i];
+      ulEl.appendChild(li);
+    }
+  }
+
+  // ------------------------------
+  // Page init
+  // ------------------------------
   document.addEventListener("DOMContentLoaded", function () {
     var eventData = null;
     try {
@@ -871,17 +928,24 @@
     }
 
     if (!eventData) {
-      document.body.innerHTML = "<div style='max-width:600px;margin:140px auto;text-align:center;padding:0 16px;'><h1 style='color:#00ff88;'>Event not found</h1><p style='opacity:0.85;'>We couldn’t load this event. Please go back and select an event again.</p><p><a href='index.html' style='color:#00ff88;'>Back to events</a></p></div>";
+      document.body.innerHTML =
+        "<div style='max-width:600px;margin:140px auto;text-align:center;padding:0 16px;'>" +
+          "<h1 style='color:#00ff88;'>Event not found</h1>" +
+          "<p style='opacity:0.85;'>We couldn’t load this event. Please go back and select an event again.</p>" +
+          "<p><a href='index.html' style='color:#00ff88;'>Back to events</a></p>" +
+        "</div>";
       document.body.style.backgroundImage = "none";
       return;
     }
 
+    // Image + background
     if (eventData.image) {
       document.body.style.backgroundImage = "url('" + eventData.image + "')";
       var img = document.getElementById("event-image");
       img.setAttribute("src", eventData.image);
     }
 
+    // Hero text
     var titleEl = document.getElementById("event-title");
     titleEl.textContent = eventData.title || "Event";
 
@@ -890,134 +954,99 @@
 
     var ageRestriction = eventData.ageRestriction || "18+";
     var dressCode = eventData.dressCode || "Venue policy applies";
-
     document.getElementById("badge-age").textContent = ageRestriction;
     document.getElementById("badge-dress").textContent = dressCode;
 
     var metaParts = [];
-    if (eventData.dateLabel) {
-      metaParts.push(eventData.dateLabel);
-    }
-    if (eventData.time) {
-      metaParts.push(eventData.time);
-    }
-    if (eventData.location) {
-      metaParts.push(eventData.location);
-    }
+    if (eventData.dateLabel) metaParts.push(eventData.dateLabel);
+    if (eventData.time) metaParts.push(eventData.time);
+    if (eventData.location) metaParts.push(eventData.location);
     document.getElementById("event-meta").textContent = metaParts.join(" • ");
 
     var submetaParts = [];
-    if (eventData.venueName) {
-      submetaParts.push(eventData.venueName);
-    }
-    if (eventData.city) {
-      submetaParts.push(eventData.city);
-    }
+    if (eventData.venueName) submetaParts.push(eventData.venueName);
+    if (eventData.city) submetaParts.push(eventData.city);
     document.getElementById("event-submeta").textContent = submetaParts.join(" • ");
 
+    // About
     var desc = eventData.description || "No description available yet. Check back soon for more details about this event.";
     document.getElementById("event-description").textContent = desc;
 
     var capacityText = "Capacity varies by venue";
-    if (eventData.venueCapacity) {
-      capacityText = "Approx. " + eventData.venueCapacity + " attendees";
-    }
+    if (eventData.venueCapacity) capacityText = "Approx. " + eventData.venueCapacity + " attendees";
     document.getElementById("stat-capacity").textContent = capacityText;
 
     var genres = eventData.genres || [];
-    var genresText = "Mixed";
-    if (genres.length > 0) {
-      genresText = genres.join(", ");
-    }
+    var genresText = genres.length ? genres.join(", ") : "Mixed";
     document.getElementById("stat-genres").textContent = genresText;
     document.getElementById("stat-age").textContent = ageRestriction;
     document.getElementById("stat-dress").textContent = dressCode;
 
+    // Pricing
     var basePrice = eventData.price || 0;
-    var ticketPriceEl = document.getElementById("ticket-price");
-    ticketPriceEl.textContent = "From " + money(basePrice);
+    document.getElementById("ticket-price").textContent = "From " + money(basePrice);
+    document.getElementById("ticket-note").textContent =
+      "Standard, VIP and VVIP options available. Final price depends on your selection.";
+    document.getElementById("ticket-meta-small").textContent =
+      "Tickets are non-refundable unless the event is cancelled. Entry subject to venue policies.";
 
-    var ticketNoteEl = document.getElementById("ticket-note");
-    ticketNoteEl.textContent = "Standard, VIP and VVIP options available. Final price depends on your selection.";
+    // Sticky CTA
+    document.getElementById("sticky-cta-title").textContent = eventData.title || "Event";
+    document.getElementById("sticky-cta-price").textContent = "From " + money(basePrice);
 
-    var ticketMetaSmall = document.getElementById("ticket-meta-small");
-    ticketMetaSmall.textContent = "Tickets are non-refundable unless the event is cancelled. Entry subject to venue policies.";
+    // ✅ Unique per-event lists (fallback to category builders)
+    var highlights =
+      normaliseList(eventData.highlights).length
+        ? normaliseList(eventData.highlights)
+        : buildHighlightsForEvent(eventData);
 
-    var stickyTitle = document.getElementById("sticky-cta-title");
-    stickyTitle.textContent = eventData.title || "Event";
+    var includes =
+      normaliseList(eventData.whatsIncluded).length
+        ? normaliseList(eventData.whatsIncluded)
+        : buildIncludesForEvent(eventData);
 
-    var stickyPrice = document.getElementById("sticky-cta-price");
-    stickyPrice.textContent = "From " + money(basePrice);
+    var amenities =
+      normaliseList(eventData.venueAmenities).length
+        ? normaliseList(eventData.venueAmenities)
+        : buildAmenitiesForEvent(eventData);
 
-    var highlights = buildHighlightsForEvent(eventData);
-    var highlightsList = document.getElementById("highlights-list");
-    var i;
-    for (i = 0; i < highlights.length; i++) {
-      var li = document.createElement("li");
-      li.textContent = highlights[i];
-      highlightsList.appendChild(li);
+    renderList(document.getElementById("highlights-list"), highlights);
+    renderList(document.getElementById("includes-list"), includes);
+    renderList(document.getElementById("amenities-list"), amenities);
+
+    // Venue map preview (your existing logic)
+    var venueMap = document.getElementById("venue-map");
+
+    var embed = eventData.venueMapEmbed;
+    var imgUrl = eventData.venueMapImage;
+
+    if (typeof embed === "string" && embed.trim() === "") embed = null;
+    if (typeof imgUrl === "string" && imgUrl.trim() === "") imgUrl = null;
+
+    if (embed && embed.indexOf("google.com/maps") !== -1) {
+      venueMap.innerHTML = "";
+      var iframe = document.createElement("iframe");
+      iframe.setAttribute("src", embed);
+      iframe.setAttribute("width", "100%");
+      iframe.setAttribute("height", "160");
+      iframe.setAttribute("style", "border:0;");
+      iframe.setAttribute("loading", "lazy");
+      venueMap.appendChild(iframe);
+    } else if (imgUrl) {
+      venueMap.innerHTML = "";
+      var mapImg = document.createElement("img");
+      mapImg.setAttribute("src", imgUrl);
+      mapImg.setAttribute("style", "width:100%;height:160px;object-fit:cover;border-radius:8px;");
+      venueMap.appendChild(mapImg);
+    } else {
+      venueMap.textContent = "Venue map preview will appear here.";
     }
 
-    var includes = buildIncludesForEvent(eventData);
-    var includesList = document.getElementById("includes-list");
-    for (i = 0; i < includes.length; i++) {
-      var li2 = document.createElement("li");
-      li2.textContent = includes[i];
-      includesList.appendChild(li2);
-    }
-
-    var amenities = buildAmenitiesForEvent(eventData);
-    var amenitiesList = document.getElementById("amenities-list");
-    for (i = 0; i < amenities.length; i++) {
-      var li3 = document.createElement("li");
-      li3.textContent = amenities[i];
-      amenitiesList.appendChild(li3);
-    }
-
- var venueMap = document.getElementById("venue-map");
-
-
-// Normalise values
-var embed = eventData.venueMapEmbed;
-var imgUrl = eventData.venueMapImage;
-
-// Treat empty strings as "no value"
-if (typeof embed === "string" && embed.trim() === "") {
-  embed = null;
-}
-if (typeof imgUrl === "string" && imgUrl.trim() === "") {
-  imgUrl = null;
-}
-
-if (embed && embed.indexOf("google.com/maps") !== -1) {
-  // Only use if it looks like a real Google Maps embed URL
-  venueMap.innerHTML = "";
-  var iframe = document.createElement("iframe");
-  iframe.setAttribute("src", embed);
-  iframe.setAttribute("width", "100%");
-  iframe.setAttribute("height", "160");
-  iframe.setAttribute("style", "border:0;");
-  iframe.setAttribute("loading", "lazy");
-  venueMap.appendChild(iframe);
-
-} else if (imgUrl) {
-  // Static image preview
-  venueMap.innerHTML = "";
-  var img = document.createElement("img");
-  img.setAttribute("src", imgUrl);
-  img.setAttribute("style", "width:100%;height:160px;object-fit:cover;border-radius:8px;");
-  venueMap.appendChild(img);
-
-} else {
-  // Fallback text
-  venueMap.textContent = "Venue map preview will appear here.";
-}
-
-
+    // FAQs
     var faqData = buildFaqForEvent(eventData);
     var faqList = document.getElementById("faq-list");
-    for (i = 0; i < faqData.length; i++) {
-      var item = faqData[i];
+    for (var f = 0; f < faqData.length; f++) {
+      var item = faqData[f];
       var wrapper = document.createElement("div");
       wrapper.className = "faq-item";
 
@@ -1055,115 +1084,95 @@ if (embed && embed.indexOf("google.com/maps") !== -1) {
       faqList.appendChild(wrapper);
     }
 
+    // Rating
     var ratingInfo = computeRatingFromReviews(eventData.reviews || []);
     var ratingScoreEl = document.getElementById("rating-score");
     var reviewSnippetEl = document.getElementById("review-snippet");
 
     if (ratingInfo.score !== null) {
-      ratingScoreEl.textContent = ratingInfo.score.toFixed(1) + " · " + ratingInfo.count + " review" + (ratingInfo.count === 1 ? "" : "s");
+      ratingScoreEl.textContent =
+        ratingInfo.score.toFixed(1) + " · " + ratingInfo.count + " review" + (ratingInfo.count === 1 ? "" : "s");
       reviewSnippetEl.textContent = "“" + ratingInfo.snippet + "”";
     } else {
       ratingScoreEl.textContent = "No reviews yet";
       reviewSnippetEl.textContent = "Be the first to review this event.";
     }
 
+    // Similar events (unchanged, but safe)
     var similarContainer = document.getElementById("similar-events");
 
-if (typeof events !== "undefined" && events && events.length > 0) {
-  var currentId = eventData.id;
-  var scored = [];
+    if (typeof events !== "undefined" && events && events.length > 0) {
+      var currentId = eventData.id;
+      var scored = [];
 
-  // Compute similarity scores
-  for (let i = 0; i < events.length; i++) {
-    var ev = events[i];
-    if (ev.id === currentId) continue;
+      for (let si = 0; si < events.length; si++) {
+        var ev = events[si];
+        if (ev.id === currentId) continue;
 
-    var s = computeSimilarityScore(eventData, ev);
-    if (s > 0) {
-      scored.push({ event: ev, score: s });
-    }
-  }
+        var s = computeSimilarityScore(eventData, ev);
+        if (s > 0) scored.push({ event: ev, score: s });
+      }
 
-  // Sort by score
-  scored.sort((a, b) => b.score - a.score);
+      scored.sort((a, b) => b.score - a.score);
 
-  // Render up to 4 similar events
-  var shown = 0;
-  for (let i = 0; i < scored.length && shown < 4; i++) {
-    var evObj = scored[i].event;
+      var shown = 0;
+      for (let sj = 0; sj < scored.length && shown < 4; sj++) {
+        var evObj = scored[sj].event;
 
-    var card = document.createElement("div");
-    card.className = "similar-card";
+        var card = document.createElement("div");
+        card.className = "similar-card";
 
-    // Title
-    var t = document.createElement("div");
-    t.className = "similar-title";
-    t.textContent = evObj.title || "Event";
+        var t = document.createElement("div");
+        t.className = "similar-title";
+        t.textContent = evObj.title || "Event";
 
-    // Meta
-    var m = document.createElement("div");
-    m.className = "similar-meta";
-    var parts = [];
-    if (evObj.dateLabel) parts.push(evObj.dateLabel);
-    if (evObj.location) parts.push(evObj.location);
-    m.textContent = parts.join(" • ");
+        var m = document.createElement("div");
+        m.className = "similar-meta";
+        var parts = [];
+        if (evObj.dateLabel) parts.push(evObj.dateLabel);
+        if (evObj.location) parts.push(evObj.location);
+        m.textContent = parts.join(" • ");
 
-    card.appendChild(t);
-    card.appendChild(m);
+        card.appendChild(t);
+        card.appendChild(m);
 
-    // ⭐ FIXED: Correct navigation with ID
-    card.addEventListener("click", (function (eventObj) {
-      return function () {
-        localStorage.setItem("selected_event", JSON.stringify(eventObj));
-        window.location.href = "event.html?id=" + eventObj.id;
-      };
-    })(evObj));
+        card.addEventListener("click", (function (eventObj) {
+          return function () {
+            localStorage.setItem("selected_event", JSON.stringify(eventObj));
+            window.location.href = "event.html?id=" + eventObj.id;
+          };
+        })(evObj));
 
-    similarContainer.appendChild(card);
-    shown++;
-  }
+        similarContainer.appendChild(card);
+        shown++;
+      }
 
-  // No similar events fallback
-  if (shown === 0) {
-    var none = document.createElement("div");
-    none.style.fontSize = "12px";
-    none.style.opacity = "0.8";
-    none.textContent = "No similar events available right now.";
-    similarContainer.appendChild(none);
-  }
-
-} else {
-  var none2 = document.createElement("div");
-  none2.style.fontSize = "12px";
-  none2.style.opacity = "0.8";
-  none2.textContent = "No similar events available right now.";
-  similarContainer.appendChild(none2);
-}
-
-
-    var getTicketsBtnMain = document.getElementById("get-tickets-btn-main");
-    setupTicketButtonElement(getTicketsBtnMain);
-
-    var stickyBtn = document.getElementById("sticky-cta-btn");
-    setupTicketButtonElement(stickyBtn);
-
-    var viewDetailsBtn = document.getElementById("btn-view-details");
-    if (viewDetailsBtn) {
-      viewDetailsBtn.addEventListener("click", function () {
-        window.location.href = "gettickets.html";
-      });
+      if (shown === 0) {
+        var none = document.createElement("div");
+        none.style.fontSize = "12px";
+        none.style.opacity = "0.8";
+        none.textContent = "No similar events available right now.";
+        similarContainer.appendChild(none);
+      }
+    } else {
+      var none2 = document.createElement("div");
+      none2.style.fontSize = "12px";
+      none2.style.opacity = "0.8";
+      none2.textContent = "No similar events available right now.";
+      similarContainer.appendChild(none2);
     }
 
+    // ✅ Ticket buttons AFTER content loaded
+    updateAllTicketButtons();
+
+    // Sticky CTA visibility
     var stickyCta = document.getElementById("sticky-cta");
     window.addEventListener("scroll", function () {
       var y = window.scrollY || window.pageYOffset;
-      if (y > 260) {
-        stickyCta.style.display = "flex";
-      } else {
-        stickyCta.style.display = "none";
-      }
+      stickyCta.style.display = (y > 260) ? "flex" : "none";
     });
 
+    // Share buttons
     var shareCopy = document.getElementById("share-copy");
     var shareWhatsApp = document.getElementById("share-whatsapp");
     var shareTwitter = document.getElementById("share-twitter");
@@ -1198,15 +1207,14 @@ if (typeof events !== "undefined" && events && events.length > 0) {
       });
     }
 
+    // Countdown
     var countdownRow = document.getElementById("countdown-row");
     var cdDays = document.getElementById("cd-days");
     var cdHours = document.getElementById("cd-hours");
     var cdMins = document.getElementById("cd-mins");
 
     var targetDate = null;
-    if (eventData.dateISO) {
-      targetDate = new Date(eventData.dateISO);
-    }
+    if (eventData.dateISO) targetDate = new Date(eventData.dateISO);
 
     if (!targetDate || isNaN(targetDate.getTime())) {
       countdownRow.style.opacity = "0.6";
@@ -1223,6 +1231,7 @@ if (typeof events !== "undefined" && events && events.length > 0) {
           cdMins.textContent = "0";
           return;
         }
+
         var totalMinutes = Math.floor(diff / 60000);
         var days = Math.floor(totalMinutes / (60 * 24));
         var hours = Math.floor((totalMinutes - days * 24 * 60) / 60);

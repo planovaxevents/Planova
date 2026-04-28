@@ -278,6 +278,26 @@
 
 <script src="script.js"></script>
 <script>
+
+  // Example: after Stripe success OR your "Confirm Purchase" button
+function completePurchase(qtyObj) {
+  const ev = JSON.parse(localStorage.getItem("selected_event") || "null");
+  if (!ev) return alert("No event selected");
+
+  if (!canPurchaseTickets(ev, qtyObj)) {
+    return alert("Not enough tickets left for your selection.");
+  }
+
+  // DEMO: treat this moment as a successful payment
+  const updated = decrementTickets(ev, qtyObj);
+
+  alert("Purchase successful! Updated remaining:\n" +
+    `Standard: ${updated.standard}\nVIP: ${updated.vip}\nVVIP: ${updated.vvip}`
+  );
+
+  // Optional: go back to event page
+  window.location.href = `event.html?id=${ev.id}`;
+}
 const eventData = JSON.parse(localStorage.getItem("selected_event"));
 if (!eventData) {
   document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:200px;'>No event selected.</h2>";
