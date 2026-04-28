@@ -29,7 +29,6 @@ def init_db():
     conn = sqlite3.connect("users.db", timeout=10)
     c = conn.cursor()
 
-    # Create base table if not exists
     c.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +38,6 @@ def init_db():
         )
     """)
 
-    # Add new columns safely (won't crash if already exists)
     try:
         c.execute("ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0")
     except:
@@ -63,14 +61,25 @@ def generate_code():
 
 def send_email(to_email, code):
     try:
+        email_user = os.getenv("EMAIL_USER")
+        email_pass = os.getenv("EMAIL_PASS")
+
+        if not email_user or not email_pass:
+            print("EMAIL ERROR: Missing EMAIL_USER or EMAIL_PASS")
+            return
+
+        print(f"Sending email to {to_email} with code {code}")
+
         msg = MIMEText(f"Your Planova verification code is: {code}")
         msg["Subject"] = "Verify your Planova account"
-        msg["From"] = os.getenv("EMAIL_USER")
+        msg["From"] = email_user
         msg["To"] = to_email
 
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASS"))
+            server.login(email_user, email_pass)
             server.send_message(msg)
+
+        print("EMAIL SENT SUCCESSFULLY")
 
     except Exception as e:
         print("EMAIL ERROR:", e)
@@ -96,20 +105,35 @@ def register():
         conn = sqlite3.connect("users.db", timeout=10)
         c = conn.cursor()
 
-        c.execute("""
-            INSERT INTO users (full_name, email, password, verified, verification_code)
-            VALUES (?, ?, ?, 0, ?)
-        """, (full_name, email, hashed_pw, code))
+        # 🔥 Check if user exists
+        c.execute("SELECT verified FROM users WHERE email = ?", (email,))
+        existing = c.fetchone()
+
+        if existing:
+            verified = existing[0]
+
+            if verified == 1:
+                return jsonify({"success": False, "message": "Email already registered"}), 400
+
+            # overwrite unverified user
+            c.execute("""
+                UPDATE users
+                SET full_name = ?, password = ?, verification_code = ?, verified = 0
+                WHERE email = ?
+            """, (full_name, hashed_pw, code, email))
+
+        else:
+            # create new user
+            c.execute("""
+                INSERT INTO users (full_name, email, password, verified, verification_code)
+                VALUES (?, ?, ?, 0, ?)
+            """, (full_name, email, hashed_pw, code))
 
         conn.commit()
 
-        # Send verification email
         send_email(email, code)
 
-        return jsonify({"success": True, "message": "Account created. Verify your email."})
-
-    except sqlite3.IntegrityError:
-        return jsonify({"success": False, "message": "Email already registered"}), 400
+        return jsonify({"success": True, "message": "Verification code sent"})
 
     except Exception as e:
         print("REGISTER ERROR:", e)
@@ -157,10 +181,17 @@ def resend_code():
     data = request.get_json() or {}
     email = data.get("email")
 
-    code = generate_code()
-
     conn = sqlite3.connect("users.db")
     cur = conn.cursor()
+
+    cur.execute("SELECT id FROM users WHERE email = ?", (email,))
+    user = cur.fetchone()
+
+    if not user:
+        conn.close()
+        return jsonify({"success": False, "message": "User not found"}), 400
+
+    code = generate_code()
 
     cur.execute("""
         UPDATE users SET verification_code = ?
