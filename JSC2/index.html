@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PLANOVA – Discover Events & Nights Out</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+.btn-outline {
+  padding: 8px 16px;
+  border: 2px solid #00ff88;
+  color: #00ff88;
+  background: transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.25s ease;
+}
+
+.btn-outline:hover {
+  background: #00ff88;
+  color: #000;
+  transform: translateY(-2px);
+}
+
+/* SIGN IN (outline) */
+.nav .btn-outline {
+  padding: 8px 16px !important;
+  border: 2px solid #00ff88 !important;
+  color: #00ff88 !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: 0.25s ease !important;
+  display: inline-block !important;
+}
+
+.nav .btn-outline:hover {
+  background: #00ff88 !important;
+  color: #000 !important;
+  transform: translateY(-2px) !important;
+}
+
+/* REGISTER (primary) */
+.nav .btn-primary {
+  padding: 8px 16px !important;
+  background: #00ff88 !important;
+  color: #000 !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  border: none !important;
+  transition: 0.25s ease !important;
+  display: inline-block !important;
+}
+
+.nav .btn-primary:hover {
+  background: #00cc66 !important;
+  transform: translateY(-2px) !important;
+}
+
+
+
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="nav">
+    <div class="nav-left">
+      <a href="index.html" class="logo">
+        <span class="logo-mark">●</span>
+        PLANOVA
+      </a>
+      <nav class="nav-links">
+        <a href="#discover">Discover</a>
+      </nav>
+    </div>
+    <div class="nav-right">
+      <a href="signin.html" class="btn-outline">Sign In</a>
+      <a href="register.html" class="btn-primary">Register</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+   <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-copy">
+         <div class="hero-pill">
+          <span class="dot-live"></span>
+           Unleash Your Wild Side
+        </div>
+
+        <h1>Find your next night out, gig or festival.</h1>
+        <p>Discover club nights, concerts, student events and more — all in one place.</p>
+
+        <!-- SEARCH -->
+        <form class="hero-search" id="hero-search">
+          <input id="search-input" type="text" placeholder="Search events, artists or venues" />
+          <input id="search-location" type="text" placeholder="Location (e.g. Nottingham)" />
+          <button type="submit">Search</button>
+        </form>
+
+        <!-- TAGS -->
+        <div class="hero-tags">
+          <span>Popular:</span>
+          <button data-tag="Clubbing">Clubbing</button>
+          <button data-tag="Live Music">Live Music</button>
+          <button data-tag="Festival">Festivals</button>
+          <button data-tag="Student Night">Student Nights</button>
+        </div>
+      </div>
+
+<!--------------------------------------------------------------------->
+      <!-- FEATURED CARD -->
+      <div class="hero-panel">
+        <div class="mini-card">
+          <span class="badge">Featured</span>
+          <h3>NG-ONE 90's - 00's Throwback</h3>
+          <p>Fri 2 May · 22:00–04:00 · Nottingham</p>
+          <div class="mini-card-footer">
+            <span class="price">From £12.00</span>
+            <button class="btn-ghost" onclick="window.location.href='event.html?id=1'">
+  View event →
+</button>
+<!-------------------------------------------------------------------------------------------->
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISCOVER -->
+  <main class="main">
+    <section class="section" id="discover">
+      <div class="section-header">
+        <div>
+          <h2>Discover all our best events</h2>
+          <p>Hand‑picked nights out, updated daily.</p>
+        </div> 
+        <select id="sort-select">
+          <option value="featured">Sort by: Featured</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="date">Date: Soonest</option>
+        </select>
+      </div>
+
+      <!-- DATE FILTERS -->
+       <div class="filters-left" id="date-filters">
+        <button class="filter-pill active" data-range="all">All</button>
+        <button class="filter-pill" data-range="today">Today</button>
+        <button class="filter-pill" data-range="weekend">This Weekend</button>
+        <button class="filter-pill" data-range="week">Next 7 Days</button>
+      </div>
+
+      <!-- EVENT GRID -->
+      <div class="events-slider-header">
+  <h2>Events</h2>
+
+  <div class="slider-controls">
+    <button class="slider-btn" id="slide-left">←</button>
+    <button class="slider-btn" id="slide-right">→</button>
+  </div>
+</div>
+
+<div class="events-slider-wrapper">
+  <div class="events-slider" id="events-slider"></div>
+</div>
+
+
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const user = JSON.parse(localStorage.getItem("planova_user"));
+    const navRight = document.querySelector(".nav-right");
+
+    if (user) {
+        navRight.innerHTML = `
+            <div class="user-icon" onclick="window.location.href='profile.html'">
+                <a href="account.html" class="nav-user-btn">Account</a>
+            </div>
+        `;
+    } else {
+        navRight.innerHTML = `
+            <a href="signin.html" class="nav-btn">Sign In</a>
+            <a href="register.html" class="nav-btn">Register</a>
+        `;
+    }
+});
+</script>
+
+<footer class="footer">
+  <div class="footer-inner">
+
+    <div class="footer-col">
+      <h3 class="footer-title">PLANOVA</h3>
+    </div>
+
+    <div class="footer-col">
+      <a href="#discover">Discover</a>
+      <a href="account.html">Account</a>
+      <a href="#">FAQs</a>
+      <a href="legal.html">Privacy & Terms</a>
+    </div>
+
+    <div class="footer-col">
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#">TikTok</a>
+      <a href="#">Help</a>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 PLANOVA. All rights reserved.
+  </div>
+</footer>
+
+</body>
+</html>
