@@ -4,11 +4,8 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 import stripe
 import os
-import random
-import smtplib
 
 app = Flask(__name__)
-print(">>> THIS IS THE CORRECT BACKEND FILE <<<")
 
 # -------------------------------------------------
 # CORS
@@ -27,12 +24,6 @@ else:
     FRONTEND_URL = "http://127.0.0.1:5000"
 
 print("USING FRONTEND_URL:", FRONTEND_URL)
-
-# -------------------------------------------------
-# Email Setup (Gmail)
-# -------------------------------------------------
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS", "planovaxevent@gmail.com")
-EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")  # your Gmail App Password
 
 # -------------------------------------------------
 # DB Setup
@@ -59,19 +50,11 @@ init_db()
 @app.route("/register", methods=["POST"])
 def register():
     data = request.get_json() or {}
-
-    print(">>> REGISTER ENDPOINT HIT <<<")
-    print("Incoming data:", data)
-
     full_name = data.get("full_name")
     email = data.get("email")
     password = data.get("password")
 
-    # 🔍 Debug input values
-    print("Parsed values:", full_name, email, password)
-
     if not full_name or not email or not password:
-        print("❌ Missing fields detected")
         return jsonify({"success": False, "message": "Missing fields"}), 400
 
     hashed_pw = generate_password_hash(password)
@@ -79,34 +62,15 @@ def register():
     try:
         conn = sqlite3.connect("users.db")
         c = conn.cursor()
-
-        print("📥 Inserting into DB...")
-        print("DB FILE EXISTS:", os.path.exists("users.db"))
-        print("DB SIZE:", os.path.getsize("users.db"))
         c.execute("""
             INSERT INTO users (full_name, email, password)
             VALUES (?, ?, ?)
         """, (full_name, email, hashed_pw))
-
         conn.commit()
-
-        # 🔍 Confirm insert worked
-        c.execute("SELECT * FROM users WHERE email = ?", (email,))
-        user = c.fetchone()
-
-        print("✅ Insert result:", user)
-        
         conn.close()
-
         return jsonify({"success": True, "message": "Account created!"})
-
-    except sqlite3.IntegrityError as e:
-        print("❌ Integrity Error:", e)
+    except sqlite3.IntegrityError:
         return jsonify({"success": False, "message": "Email already registered"}), 400
-
-    except Exception as e:
-        print("❌ UNKNOWN ERROR:", e)
-        return jsonify({"success": False, "message": "Server error"}), 500
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -193,43 +157,6 @@ def change_password():
     conn.close()
 
     return jsonify({"success": True, "message": "Password updated"})
-
-# -------------------------------------------------
-# Email verification route
-# -------------------------------------------------
-@app.route("/send_code", methods=["POST"])
-def send_code():
-    data = request.get_json() or {}
-    email = data.get("email")
-
-    if not email:
-        return jsonify({"success": False, "message": "No email provided"}), 400
-
-    if not EMAIL_APP_PASSWORD:
-        return jsonify({"success": False, "message": "Email service not configured"}), 500
-
-    # Generate 6-digit code, zero-padded
-    code = f"{random.randint(0, 999999):06d}"
-
-    try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(EMAIL_ADDRESS, EMAIL_APP_PASSWORD)
-
-        subject = "PLANOVA Email Verification Code"
-        body = f"Your PLANOVA verification code is: {code}\n\nIf you did not request this, you can ignore this email."
-        message = f"Subject: {subject}\n\n{body}"
-
-        server.sendmail(EMAIL_ADDRESS, email, message)
-        server.quit()
-
-        # For your current frontend flow, we return the code so it can validate on the client.
-        # Later, if you want, we can move validation fully to the backend.
-        return jsonify({"success": True, "code": code})
-
-    except Exception as e:
-        print("EMAIL ERROR:", e)
-        return jsonify({"success": False, "message": "Failed to send email"}), 500
 
 # -------------------------------------------------
 # Wakeup
