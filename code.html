@@ -93,6 +93,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
         });
 
         const data = await res.json();
+        console.log("SEND CODE RESPONSE:", data);
 
         if (data.success) {
             generatedCode = data.code; // store the code from backend
@@ -108,6 +109,8 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
 
     } else if (buttonMode === "continue") {
         const userCode = document.getElementById("codeInput").value.trim();
+
+        console.log("User entered:", userCode, "Generated:", generatedCode);
 
         // ✅ No code entered
         if (!userCode) {
@@ -142,23 +145,37 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
         success.style.display = "block";
 
         try {
+            const name = localStorage.getItem("pending_name");
+            const email = localStorage.getItem("pending_email");
+            const password = localStorage.getItem("pending_password");
+
+            console.log("REGISTERING WITH:", { name, email, password });
+
             const res = await fetch("/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    full_name: localStorage.getItem("pending_name"),
-                    email: localStorage.getItem("pending_email"),
-                    password: localStorage.getItem("pending_password")
+                    full_name: name,
+                    email: email,
+                    password: password
                 })
             });
 
             const data = await res.json();
+            console.log("REGISTER RESPONSE:", data);
 
             if (data.success) {
+
+                // ✅ CREATE LOGIN SESSION (THIS WAS MISSING)
+                localStorage.setItem("planova_user", JSON.stringify({
+                    full_name: name,
+                    email: email
+                }));
+
                 success.innerText = "Account created successfully!";
                 success.style.display = "block";
 
-                // Clear temp data
+                // Clear temp data AFTER session is created
                 localStorage.removeItem("pending_name");
                 localStorage.removeItem("pending_email");
                 localStorage.removeItem("pending_password");
@@ -173,6 +190,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
             }
 
         } catch (err) {
+            console.error("REGISTER ERROR:", err);
             error.innerText = "Something went wrong. Please try again.";
             error.style.display = "block";
         }

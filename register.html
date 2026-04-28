@@ -120,6 +120,11 @@ const ruleNumber = document.getElementById("rule-number");
 
 let passwordValid = false;
 
+// ✅ Prevent accidental form submission
+document.getElementById("register-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+});
+
 function validatePassword() {
   const pwd = passwordInput.value;
 
@@ -172,9 +177,26 @@ registerBtn.addEventListener("click", () => {
   if (registerBtn.disabled) return;
 
   const email = emailInput.value.trim();
-localStorage.setItem("pending_email", email);
-localStorage.setItem("pending_name", fullNameInput.value.trim());
-localStorage.setItem("pending_password", passwordInput.value);
+  const name = fullNameInput.value.trim();
+  const password = passwordInput.value;
+
+  // ✅ Save EVERYTHING properly
+  localStorage.setItem("pending_email", email);
+  localStorage.setItem("pending_name", name);
+  localStorage.setItem("pending_password", password);
+
+  // 🔍 Debug log (VERY important)
+  console.log("Saved to localStorage:", {
+    email,
+    name,
+    password
+  });
+
+  // ✅ Safety check (prevents broken flow later)
+  if (!email || !name || !password) {
+    alert("Something went wrong. Please try again.");
+    return;
+  }
 
   window.location.href = "code.html";
 });
