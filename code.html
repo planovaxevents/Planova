@@ -74,7 +74,34 @@
 
 <script>
 let generatedCode = null;
-let buttonMode = "send"; // "send" or "continue"
+let buttonMode = "send";
+
+// 🔥 ORIGINAL WORKING REGISTER LOGIC (INJECTED HERE)
+async function performRegister(full_name, email, password) {
+    try {
+        const res = await fetch("/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ full_name, email, password })
+        });
+
+        const data = await res.json();
+        console.log("REGISTER RESPONSE:", data);
+
+        if (data.success) {
+            localStorage.setItem("planova_user", JSON.stringify({
+                name: full_name,
+                email: email
+            }));
+
+            window.location.href = "index.html";
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Unable to connect to server.");
+    }
+}
 
 document.getElementById("sendBtn").addEventListener("click", async () => {
     const btn = document.getElementById("sendBtn");
@@ -85,7 +112,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
     success.style.display = "none";
 
     if (buttonMode === "send") {
-        // Ask backend to send the code
+
         const res = await fetch("/send_code", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -107,101 +134,51 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
             error.style.display = "block";
         }
 
-    } else if (buttonMode === "continue") {
+    } else {
+
         const userCode = document.getElementById("codeInput").value.trim();
 
-        console.log("User entered:", userCode, "Generated:", generatedCode);
-
-        // ✅ No code entered
         if (!userCode) {
             error.innerText = "Please enter a code to continue";
             error.style.display = "block";
             return;
         }
 
-        // ✅ Must be 6 digits
         if (userCode.length !== 6) {
             error.innerText = "Code must be 6 digits";
             error.style.display = "block";
             return;
         }
 
-        // ✅ Must request code first
         if (!generatedCode) {
             error.innerText = "You must request a code first";
             error.style.display = "block";
             return;
         }
 
-        // ✅ Incorrect code
         if (userCode !== generatedCode) {
             error.innerText = "Invalid Code, Please Try Again!";
             error.style.display = "block";
             return;
         }
 
-        // ✅ SUCCESS
         success.innerText = "Code verified!";
         success.style.display = "block";
 
-        try {
-            const name = localStorage.getItem("pending_name");
-            const email = localStorage.getItem("pending_email");
-            const password = localStorage.getItem("pending_password");
+        const name = localStorage.getItem("pending_name");
+        const email = localStorage.getItem("pending_email");
+        const password = localStorage.getItem("pending_password");
 
-            console.log("REGISTERING WITH:", { name, email, password });
+        console.log("REGISTERING WITH:", { name, email, password });
 
-            // 🚨 CRITICAL SAFETY CHECK (this was missing)
-            if (!name || !email || !password) {
-                error.innerText = "Missing registration data. Please try again.";
-                error.style.display = "block";
-                return;
-            }
-
-            const res = await fetch("/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    full_name: name,
-                    email: email,
-                    password: password
-                })
-            });
-
-            const data = await res.json();
-            console.log("REGISTER RESPONSE:", data);
-
-            if (data.success) {
-
-                // ✅ Create logged-in session (same as old system)
-                localStorage.setItem("planova_user", JSON.stringify({
-                    full_name: name,
-                    email: email,
-                    password: password // needed for account features
-                }));
-
-                success.innerText = "Account created successfully!";
-                success.style.display = "block";
-
-                // Cleanup temp data
-                localStorage.removeItem("pending_name");
-                localStorage.removeItem("pending_email");
-                localStorage.removeItem("pending_password");
-
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 1200);
-
-            } else {
-                error.innerText = data.message;
-                error.style.display = "block";
-            }
-
-        } catch (err) {
-            console.error("REGISTER ERROR:", err);
-            error.innerText = "Something went wrong. Please try again.";
+        if (!name || !email || !password) {
+            error.innerText = "Missing registration data. Please try again.";
             error.style.display = "block";
+            return;
         }
+
+        // 🔥 THIS IS THE FIX
+        await performRegister(name, email, password);
     }
 });
 </script>

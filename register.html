@@ -208,6 +208,32 @@ document.querySelectorAll(".toggle-password").forEach(btn => {
     input.type = input.type === "password" ? "text" : "password";
   });
 });
+
+async function performRegister(full_name, email, password) {
+    try {
+        const res = await fetch("/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ full_name, email, password })
+        });
+
+        const data = await res.json();
+        console.log("REGISTER RESPONSE:", data);
+
+        if (data.success) {
+            localStorage.setItem("planova_user", JSON.stringify({
+                name: full_name,
+                email: email
+            }));
+
+            window.location.href = "index.html";
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Unable to connect to server.");
+    }
+}
 </script>
 
 <script src="auth.js"></script>
