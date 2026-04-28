@@ -5,17 +5,17 @@ const events = [
 
 {
     id: 1,
-    title: "NG-ONE THROWBACK SEASON",
+    title: "NG-ONE THROWBACK NIGHT",
     category: "Clubbing",
     date: "2026-04-27",
     dateLabel: "Sat 15th August",
-    dateISO: "2026-08-15T00:17:00",
-    time: "18:00 - 02:00",
+    dateISO: "2026-08-15T00:13:01",
+    time: "21:00 - 03:00",
     location: "NG-ONE Nottingham",
-    price: 10,
-    priceLabel: "From £10",
+    price: 8,
+    priceLabel: "From £8",
     image: "ChatGPT Image Apr 28, 2026, 12_13_05 AM.png",
-    description: "A Sensationl Night You Wont Forget",
+    description: "A night you won't wanna miss, Dress up and have fun!",
 
     venue: {
       name: "NG-ONE",
@@ -23,14 +23,14 @@ const events = [
       lng: -1.1417604134232073
     },
 
-    venueCapacity: 1200,
+    venueCapacity: 350,
     ageRestriction: "18+",
     dressCode: "90s - 00s",
     genres: ["Pop", "Hip-Hop", "Rap"],
 
     ticketAvailability: {
-      standard: 1190,
-      vip: 9,
+      standard: 325,
+      vip: 1,
       vvip: 1
     },
 
@@ -42,7 +42,7 @@ const events = [
     },
 
     promoCodes: {
-      "NGONE10": 0.40
+      "": 0.00
     },
 
     // ✅ add unique lists (optional but recommended)

@@ -46,6 +46,34 @@
       margin-top: 15px;
       text-align: center;
     }
+
+    /* Verification section */
+    #verification-section {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #verification-code {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      text-align: center;
+      font-size: 18px;
+      letter-spacing: 5px;
+    }
+
+    .resend {
+      margin-top: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+
+    .resend.disabled {
+      pointer-events: none;
+      opacity: 0.3;
+    }
   </style>
 </head>
 <body>
@@ -63,6 +91,7 @@
     <h2>Create an account</h2>
     <p class="muted">Join PLANOVA to discover and manage events</p>
 
+    <!-- REGISTER FORM -->
     <form id="register-form">
       <label>Full Name</label>
       <input type="text" id="full_name" placeholder="John Smith" required />
@@ -98,6 +127,20 @@
       </button>
     </form>
 
+    <!-- VERIFICATION SECTION -->
+    <div id="verification-section">
+      <h3>Verify your email</h3>
+      <p class="muted">Enter the code sent to your email</p>
+
+      <input type="text" id="verification-code" maxlength="6" placeholder="••••••" />
+
+      <button class="btn-primary full-width" id="verify-btn">
+        Verify Account
+      </button>
+
+      <div class="resend" id="resend-btn">Resend Code</div>
+    </div>
+
     <p class="auth-switch">
       Already have an account? <a href="signin.html">Sign In</a>
     </p>
@@ -118,26 +161,22 @@ const ruleNumber = document.getElementById("rule-number");
 function validatePassword() {
   const pwd = passwordInput.value;
 
-  // Rules
   const hasLength = pwd.length >= 12 && pwd.length <= 60;
   const hasLower = /[a-z]/.test(pwd);
   const hasUpper = /[A-Z]/.test(pwd);
   const hasNumberOrSpecial = /[0-9!@#$%^&*(),.?":{}|<>]/.test(pwd);
 
-  // Update rule colours
   ruleLength.classList.toggle("valid", hasLength);
   ruleLower.classList.toggle("valid", hasLower);
   ruleUpper.classList.toggle("valid", hasUpper);
   ruleNumber.classList.toggle("valid", hasNumberOrSpecial);
 
-  // Strength score
   let score = 0;
   if (hasLength) score++;
   if (hasLower) score++;
   if (hasUpper) score++;
   if (hasNumberOrSpecial) score++;
 
-  // Update strength bar
   const percent = (score / 4) * 100;
   strengthFill.style.width = percent + "%";
 
@@ -146,13 +185,12 @@ function validatePassword() {
   if (score === 3) strengthFill.style.background = "#ffcc00";
   if (score === 4) strengthFill.style.background = "#00ff88";
 
-  // Disable register button until all rules pass
   registerBtn.disabled = score !== 4;
 }
 
 passwordInput.addEventListener("input", validatePassword);
 
-// Submit handler
+// REGISTER
 document.getElementById("register-form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -175,18 +213,74 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
         const data = await res.json();
 
         if (data.success) {
-            localStorage.setItem("planova_user", JSON.stringify({
-                name: full_name,
-                email: email
-            }));
+            // SWITCH UI INSTEAD OF REDIRECT
+            document.getElementById("register-form").style.display = "none";
+            document.getElementById("verification-section").style.display = "block";
 
-            window.location.href = "index.html";
+            localStorage.setItem("verify_email", email);
         } else {
             alert(data.message);
         }
     } catch (err) {
         alert("Unable to connect to server. Make sure your backend is running.");
     }
+});
+
+// VERIFY
+document.getElementById("verify-btn").addEventListener("click", async () => {
+  const code = document.getElementById("verification-code").value;
+  const email = localStorage.getItem("verify_email");
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Account verified!");
+
+      localStorage.setItem("planova_user", JSON.stringify({ email }));
+
+      window.location.href = "index.html";
+    } else {
+      alert(data.message || "Invalid code.");
+    }
+  } catch {
+    alert("Server error during verification.");
+  }
+});
+
+// RESEND CODE
+const resendBtn = document.getElementById("resend-btn");
+
+resendBtn.addEventListener("click", async () => {
+  const email = localStorage.getItem("verify_email");
+
+  resendBtn.classList.add("disabled");
+  resendBtn.innerText = "Sending...";
+
+  try {
+    await fetch("http://127.0.0.1:5000/resend-code", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    resendBtn.innerText = "Code Sent!";
+  } catch {
+    resendBtn.innerText = "Error. Try again.";
+  }
+
+  setTimeout(() => {
+    resendBtn.classList.remove("disabled");
+    resendBtn.innerText = "Resend Code";
+  }, 60000);
 });
 
 // Password toggle
