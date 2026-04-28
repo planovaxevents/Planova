@@ -62,7 +62,7 @@
 
 <div class="verify-container">
   <h2>Email Verification</h2>
-  <p>Enter the 6‑digit code sent to your email</p>
+  <p>Enter the 6-digit code sent to your email</p>
 
   <input type="text" id="codeInput" maxlength="6" placeholder="______" />
 
@@ -96,7 +96,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
         console.log("SEND CODE RESPONSE:", data);
 
         if (data.success) {
-            generatedCode = data.code; // store the code from backend
+            generatedCode = data.code;
             success.innerText = "Code sent! Check your email.";
             success.style.display = "block";
 
@@ -126,7 +126,7 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
             return;
         }
 
-        // ✅ Safety check
+        // ✅ Must request code first
         if (!generatedCode) {
             error.innerText = "You must request a code first";
             error.style.display = "block";
@@ -151,6 +151,13 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
 
             console.log("REGISTERING WITH:", { name, email, password });
 
+            // 🚨 CRITICAL SAFETY CHECK (this was missing)
+            if (!name || !email || !password) {
+                error.innerText = "Missing registration data. Please try again.";
+                error.style.display = "block";
+                return;
+            }
+
             const res = await fetch("/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -166,16 +173,17 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
 
             if (data.success) {
 
-                // ✅ CREATE LOGIN SESSION (THIS WAS MISSING)
+                // ✅ Create logged-in session (same as old system)
                 localStorage.setItem("planova_user", JSON.stringify({
                     full_name: name,
-                    email: email
+                    email: email,
+                    password: password // needed for account features
                 }));
 
                 success.innerText = "Account created successfully!";
                 success.style.display = "block";
 
-                // Clear temp data AFTER session is created
+                // Cleanup temp data
                 localStorage.removeItem("pending_name");
                 localStorage.removeItem("pending_email");
                 localStorage.removeItem("pending_password");
