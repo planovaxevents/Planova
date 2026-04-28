@@ -1,221 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>PLANOVA – Register</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8" />
+<title>PLANOVA – Register</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="styles.css" />
 
-  <style>
-    /* Password strength bar */
-    .strength-bar {
-      width: 100%;
-      height: 8px;
-      background: #222;
-      border-radius: 5px;
-      margin-top: 6px;
-      overflow: hidden;
-    }
+<style>
+body {
+  background: #0b0b0b;
+  color: white;
+  font-family: Arial, sans-serif;
+}
 
-    .strength-fill {
-      height: 100%;
-      width: 0%;
-      background: red;
-      transition: 0.3s;
-    }
+.auth-container {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
 
-    /* Password rules */
-    .password-rules {
-      font-size: 13px;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
+.auth-box {
+  width: 420px;
+  background: #111;
+  border: 1px solid #1f1f1f;
+  border-radius: 14px;
+  padding: 30px;
+  box-shadow: 0 0 20px rgba(0,255,136,0.08);
+}
 
-    .password-rules span {
-      display: block;
-      color: #ff4d4d;
-    }
+h2 {
+  margin-bottom: 5px;
+}
 
-    .password-rules span.valid {
-      color: #00ff88;
-    }
+.muted {
+  color: #aaa;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
 
-    .terms {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-top: 15px;
-      text-align: center;
-    }
+label {
+  font-size: 13px;
+  color: #bbb;
+  display: block;
+  margin-top: 12px;
+}
 
-    /* Verification section */
-    #verification-section {
-      display: none;
-      margin-top: 20px;
-      text-align: center;
-    }
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: white;
+  border-radius: 8px;
+  outline: none;
+}
 
-    #verification-code {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      text-align: center;
-      font-size: 18px;
-      letter-spacing: 5px;
-    }
+input:focus {
+  border-color: #00ff88;
+}
 
-    .resend {
-      margin-top: 10px;
-      font-size: 13px;
-      cursor: pointer;
-      opacity: 0.7;
-    }
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  background: #00ff88;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    .resend.disabled {
-      pointer-events: none;
-      opacity: 0.3;
-    }
-  </style>
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* verification */
+.verify-status {
+  font-size: 13px;
+  margin-top: 10px;
+  min-height: 18px;
+}
+
+.verify-status.success { color: #00ff88; }
+.verify-status.error { color: #ff4d4d; }
+
+/* code input highlight */
+.code-box {
+  margin-top: 15px;
+}
+
+.code-box input {
+  text-align: center;
+  letter-spacing: 6px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* password strength */
+.strength-bar {
+  width: 100%;
+  height: 7px;
+  background: #222;
+  border-radius: 5px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.strength-fill {
+  height: 100%;
+  width: 0%;
+  background: red;
+  transition: 0.3s;
+}
+
+.password-rules span {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  color: #ff4d4d;
+}
+
+.password-rules span.valid {
+  color: #00ff88;
+}
+
+.terms {
+  font-size: 11px;
+  opacity: 0.7;
+  text-align: center;
+  margin-top: 15px;
+}
+</style>
 </head>
-<body>
 
-<header class="nav">
-  <div class="nav-left">
-    <a href="index.html" class="logo">
-      <span class="logo-mark">●</span> PLANOVA
-    </a>
-  </div>
-</header>
+<body>
 
 <section class="auth-container">
   <div class="auth-box">
-    <h2>Create an account</h2>
-    <p class="muted">Join PLANOVA to discover and manage events</p>
 
-    <!-- REGISTER FORM -->
+    <h2>Create account</h2>
+    <p class="muted">Verify your email to continue</p>
+
     <form id="register-form">
+
       <label>Full Name</label>
-      <input type="text" id="full_name" placeholder="John Smith" required />
+      <input type="text" id="full_name" required />
 
       <label>Email</label>
-      <input type="email" id="email" placeholder="you@example.com" required />
+      <input type="email" id="email" required />
 
-      <label>Password</label>
-      <div class="password-field">
-        <input type="password" id="password" placeholder="••••••••" required />
-        <button type="button" class="toggle-password">👁</button>
+      <button type="button" class="btn-primary" id="sendCodeBtn">
+        Send Verification Code
+      </button>
+
+      <div class="verify-status" id="statusMsg"></div>
+
+      <!-- CODE INPUT (MOVED HERE as requested) -->
+      <div class="code-box">
+        <label>Verification Code</label>
+        <input type="text" id="codeInput" maxlength="6" placeholder="••••••" />
       </div>
 
-      <!-- Strength bar -->
+      <label>Password</label>
+      <input type="password" id="password" required />
+
       <div class="strength-bar">
         <div class="strength-fill" id="strength-fill"></div>
       </div>
 
-      <!-- Password rules -->
       <div class="password-rules">
         <span id="rule-length">• 12–60 characters</span>
-        <span id="rule-lower">• A lowercase letter</span>
-        <span id="rule-upper">• An uppercase letter</span>
-        <span id="rule-number">• A number OR special character</span>
+        <span id="rule-lower">• lowercase letter</span>
+        <span id="rule-upper">• uppercase letter</span>
+        <span id="rule-number">• number or special character</span>
       </div>
 
       <div class="terms">
-        By signing up you agree to Planova’s <a href="legal.html">Terms & Conditions</a>
+        By signing up you agree to PLANOVA Terms & Conditions
       </div>
 
-      <button class="btn-primary full-width" type="submit" id="register-btn">
+      <button class="btn-primary" type="submit" id="registerBtn" disabled>
         Register
       </button>
+
     </form>
-
-    <!-- VERIFICATION SECTION -->
-    <div id="verification-section">
-      <h3>Verify your email</h3>
-      <p class="muted">Enter the code sent to your email</p>
-
-      <input type="text" id="verification-code" maxlength="6" placeholder="••••••" />
-
-      <button class="btn-primary full-width" id="verify-btn">
-        Verify Account
-      </button>
-
-      <div class="resend" id="resend-btn">Resend Code</div>
-    </div>
-
-    <p class="auth-switch">
-      Already have an account? <a href="signin.html">Sign In</a>
-    </p>
   </div>
 </section>
 
 <script>
-const API_URL = "http://127.0.0.1:5000";
+let generatedCode = null;
+let emailVerified = false;
 
-const passwordInput = document.getElementById("password");
-const registerBtn = document.getElementById("register-btn");
+const statusMsg = document.getElementById("statusMsg");
+const registerBtn = document.getElementById("registerBtn");
 
-function validatePassword() {
-  const pwd = passwordInput.value;
+// ---------- SEND CODE ----------
+document.getElementById("sendCodeBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
 
-  const ok =
-    pwd.length >= 12 &&
-    /[a-z]/.test(pwd) &&
-    /[A-Z]/.test(pwd) &&
-    /[0-9!@#$%^&*]/.test(pwd);
+  if (!email) {
+    statusMsg.textContent = "Enter your email first";
+    statusMsg.className = "verify-status error";
+    return;
+  }
 
-  registerBtn.disabled = !ok;
-}
+  const res = await fetch("http://127.0.0.1:5000/send_code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email })
+  });
 
-passwordInput.addEventListener("input", validatePassword);
+  const data = await res.json();
 
+  if (data.success) {
+    generatedCode = data.code;
+    statusMsg.textContent = "Verification code sent!";
+    statusMsg.className = "verify-status success";
+  } else {
+    statusMsg.textContent = data.message;
+    statusMsg.className = "verify-status error";
+  }
+});
 
-// REGISTER (ONLY SENDS CODE, DOES NOT CREATE FINAL ACCOUNT)
+// ---------- VERIFY ON INPUT ----------
+document.getElementById("codeInput").addEventListener("input", () => {
+  const code = document.getElementById("codeInput").value.trim();
+
+  if (code.length !== 6) return;
+
+  if (code === generatedCode) {
+    emailVerified = true;
+    registerBtn.disabled = false;
+
+    statusMsg.textContent = "Email verified successfully!";
+    statusMsg.className = "verify-status success";
+  } else {
+    emailVerified = false;
+    registerBtn.disabled = true;
+
+    statusMsg.textContent = "Invalid code";
+    statusMsg.className = "verify-status error";
+  }
+});
+
+// ---------- PASSWORD STRENGTH ----------
+const pwd = document.getElementById("password");
+const fill = document.getElementById("strength-fill");
+
+pwd.addEventListener("input", () => {
+  const v = pwd.value;
+
+  const rules = [
+    v.length >= 12 && v.length <= 60,
+    /[a-z]/.test(v),
+    /[A-Z]/.test(v),
+    /[0-9!@#$%^&*]/.test(v)
+  ];
+
+  let score = rules.filter(Boolean).length;
+
+  fill.style.width = (score * 25) + "%";
+  fill.style.background =
+    score === 4 ? "#00ff88" :
+    score === 3 ? "#ffcc00" :
+    score === 2 ? "orange" : "red";
+});
+
+// ---------- REGISTER ----------
 document.getElementById("register-form").addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  if (!emailVerified) return;
+
   const full_name = document.getElementById("full_name").value;
   const email = document.getElementById("email").value;
-  const password = passwordInput.value;
+  const password = pwd.value;
 
-  const res = await fetch(`${API_URL}/register`, {
+  const res = await fetch("http://127.0.0.1:5000/register", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ full_name, email, password })
   });
 
   const data = await res.json();
 
   if (data.success) {
-    document.getElementById("register-form").style.display = "none";
-    document.getElementById("verification-section").style.display = "block";
-
-    localStorage.setItem("verify_email", email);
-  } else {
-    alert(data.message);
-  }
-});
-
-
-// VERIFY (FINAL STEP CREATES ACCOUNT AS VERIFIED)
-document.getElementById("verify-btn").addEventListener("click", async () => {
-  const code = document.getElementById("verification-code").value;
-  const email = localStorage.getItem("verify_email");
-
-  const res = await fetch(`${API_URL}/verify`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ email, code })
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    alert("Verified!");
-
-    localStorage.setItem("planova_user", JSON.stringify({ email }));
-
+    localStorage.setItem("planova_user", JSON.stringify({ name: full_name, email }));
     window.location.href = "index.html";
   } else {
-    alert(data.message);
+    statusMsg.textContent = data.message;
+    statusMsg.className = "verify-status error";
   }
 });
 </script>
