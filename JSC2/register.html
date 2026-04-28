@@ -93,10 +93,9 @@
         By signing up you agree to Planova’s <a href="legal.html">Terms & Conditions</a>
       </div>
 
-      <button class="btn-primary full-width" type="button" id="register-btn" disabled>
+      <button class="btn-primary full-width" type="submit" id="register-btn">
         Register
       </button>
-
     </form>
 
     <p class="auth-switch">
@@ -106,8 +105,6 @@
 </section>
 
 <script>
-const fullNameInput = document.getElementById("full_name");
-const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const strengthFill = document.getElementById("strength-fill");
 const registerBtn = document.getElementById("register-btn");
@@ -117,13 +114,6 @@ const ruleLength = document.getElementById("rule-length");
 const ruleLower = document.getElementById("rule-lower");
 const ruleUpper = document.getElementById("rule-upper");
 const ruleNumber = document.getElementById("rule-number");
-
-let passwordValid = false;
-
-// ✅ Prevent accidental form submission
-document.getElementById("register-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-});
 
 function validatePassword() {
   const pwd = passwordInput.value;
@@ -156,69 +146,33 @@ function validatePassword() {
   if (score === 3) strengthFill.style.background = "#ffcc00";
   if (score === 4) strengthFill.style.background = "#00ff88";
 
-  passwordValid = score === 4;
-  validateForm();
+  // Disable register button until all rules pass
+  registerBtn.disabled = score !== 4;
 }
 
-function validateForm() {
-  const fullNameValid = fullNameInput.value.trim().length > 0;
-  const emailValid = emailInput.value.trim().length > 0;
-
-  registerBtn.disabled = !(fullNameValid && emailValid && passwordValid);
-}
-
-// Watch all inputs
-fullNameInput.addEventListener("input", validateForm);
-emailInput.addEventListener("input", validateForm);
 passwordInput.addEventListener("input", validatePassword);
 
-// Register button → go to code.html
-registerBtn.addEventListener("click", () => {
-  if (registerBtn.disabled) return;
+// Submit handler
+document.getElementById("register-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const email = emailInput.value.trim();
-  const name = fullNameInput.value.trim();
-  const password = passwordInput.value;
+    if (registerBtn.disabled) {
+      alert("Your password does not meet the required rules.");
+      return;
+    }
 
-  // ✅ Save EVERYTHING properly
-  localStorage.setItem("pending_email", email);
-  localStorage.setItem("pending_name", name);
-  localStorage.setItem("pending_password", password);
+    const full_name = document.getElementById("full_name").value;
+    const email = document.getElementById("email").value;
+    const password = passwordInput.value;
 
-  // 🔍 Debug log (VERY important)
-  console.log("Saved to localStorage:", {
-    email,
-    name,
-    password
-  });
-
-  // ✅ Safety check (prevents broken flow later)
-  if (!email || !name || !password) {
-    alert("Something went wrong. Please try again.");
-    return;
-  }
-
-  window.location.href = "code.html";
-});
-
-// Password toggle
-document.querySelectorAll(".toggle-password").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const input = btn.previousElementSibling;
-    input.type = input.type === "password" ? "text" : "password";
-  });
-});
-
-async function performRegister(full_name, email, password) {
     try {
-        const res = await fetch("/register", {
+        const res = await fetch("http://127.0.0.1:5000/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ full_name, email, password })
         });
 
         const data = await res.json();
-        console.log("REGISTER RESPONSE:", data);
 
         if (data.success) {
             localStorage.setItem("planova_user", JSON.stringify({
@@ -231,9 +185,17 @@ async function performRegister(full_name, email, password) {
             alert(data.message);
         }
     } catch (err) {
-        alert("Unable to connect to server.");
+        alert("Unable to connect to server. Make sure your backend is running.");
     }
-}
+});
+
+// Password toggle
+document.querySelectorAll(".toggle-password").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const input = btn.previousElementSibling;
+    input.type = input.type === "password" ? "text" : "password";
+  });
+});
 </script>
 
 <script src="auth.js"></script>

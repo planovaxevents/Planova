@@ -16,14 +16,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Stripe Setup
 # -------------------------------------------------
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-
-# Auto-detect environment (LOCAL vs RENDER)
-if os.getenv("RENDER"):
-    FRONTEND_URL = "https://planova-lwj9.onrender.com"
-else:
-    FRONTEND_URL = "http://127.0.0.1:5000"
-
-print("USING FRONTEND_URL:", FRONTEND_URL)
+FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
 # DB Setup
@@ -190,7 +183,7 @@ def safe_float(value, default=0.0):
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json() or {}
-    print("INCOMING CHECKOUT DATA:", data)
+    print("INCOMING CHECKOUT DATA:", data)  # debug in Render logs
 
     event_title = data.get("event_title", "Event")
 
@@ -291,7 +284,7 @@ def create_checkout_session():
         return jsonify({"sessionId": session.id})
 
     except Exception as e:
-        print("STRIPE ERROR:", e)
+        print("STRIPE ERROR:", e)  # shows in Render logs
         return jsonify({"error": str(e)}), 500
 
 # -------------------------------------------------
