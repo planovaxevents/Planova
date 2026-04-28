@@ -90,9 +90,10 @@ async function performRegister(full_name, email, password) {
 
         if (data.success) {
             localStorage.setItem("planova_user", JSON.stringify({
-                name: full_name,
-                email: email
-            }));
+    full_name: full_name,
+    email: email,
+    password: password // needed for account features
+}));
 
             window.location.href = "index.html";
         } else {

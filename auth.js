@@ -16,24 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // 🔥 NEW: fallback check (in case user was just registered but not stored properly)
-    if (!user) {
-        const email = localStorage.getItem("pending_email");
-
-        // If user just registered but we never set session, create it
-        if (email) {
-            user = {
-                email: email,
-                full_name: localStorage.getItem("pending_name") || "User"
-            };
-
-            // Save session
-            localStorage.setItem("planova_user", JSON.stringify(user));
-
-            console.log("Recovered user session:", user);
-        }
-    }
-
     // Normal navbar behaviour
     if (user) {
         navRight.innerHTML = `
