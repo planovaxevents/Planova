@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 import stripe
 import os
 
-# ✅ NEW IMPORTS (email verification)
+# ✅ NEW: PostgreSQL
+import psycopg2
+
+# ✅ Email verification
 import random
 import smtplib
 from email.mime.text import MIMEText
@@ -25,19 +27,26 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
-# DB Setup
+# PostgreSQL Setup
 # -------------------------------------------------
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_conn():
+    return psycopg2.connect(DATABASE_URL)
+
 def init_db():
-    conn = sqlite3.connect("users.db", timeout=10)
-    c = conn.cursor()
-    c.execute("""
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             full_name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
+            email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL
         )
     """)
+
     conn.commit()
     conn.close()
 
@@ -60,19 +69,20 @@ def register():
 
     conn = None
     try:
-        conn = sqlite3.connect("users.db", timeout=10)
+        conn = get_conn()
         c = conn.cursor()
 
         c.execute("""
             INSERT INTO users (full_name, email, password)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
         """, (full_name, email, hashed_pw))
 
         conn.commit()
 
         return jsonify({"success": True, "message": "Account created!"})
 
-    except sqlite3.IntegrityError:
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
         return jsonify({"success": False, "message": "Email already registered"}), 400
 
     except Exception as e:
@@ -83,9 +93,8 @@ def register():
         if conn:
             conn.close()
 
-
 # -------------------------------------------------
-# ✅ EMAIL VERIFICATION ROUTE (NEW)
+# EMAIL VERIFICATION
 # -------------------------------------------------
 @app.route("/send_code", methods=["POST"])
 def send_code():
@@ -95,7 +104,6 @@ def send_code():
     if not email:
         return jsonify({"success": False, "message": "Email required"}), 400
 
-    # Generate 6-digit code
     code = str(random.randint(100000, 999999))
 
     try:
@@ -111,24 +119,27 @@ def send_code():
             )
             server.send_message(msg)
 
-        # ⚠️ Returning code (frontend expects this)
         return jsonify({"success": True, "code": code})
 
     except Exception as e:
         print("EMAIL ERROR:", e)
         return jsonify({"success": False, "message": "Failed to send email"}), 500
 
-
+# -------------------------------------------------
+# LOGIN
+# -------------------------------------------------
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
-    conn = sqlite3.connect("users.db", timeout=10)
+    conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT full_name, password FROM users WHERE email = ?", (email,))
+
+    cur.execute("SELECT full_name, password FROM users WHERE email = %s", (email,))
     row = cur.fetchone()
+
     conn.close()
 
     if not row:
@@ -141,17 +152,19 @@ def login():
 
     return jsonify({"success": True, "full_name": full_name})
 
-
+# -------------------------------------------------
+# DELETE ACCOUNT
+# -------------------------------------------------
 @app.route("/delete-account", methods=["POST"])
 def delete_account():
     data = request.get_json() or {}
     email = data.get("email")
     password = data.get("password")
 
-    conn = sqlite3.connect("users.db", timeout=10)
+    conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("SELECT password FROM users WHERE email = ?", (email,))
+    cur.execute("SELECT password FROM users WHERE email = %s", (email,))
     row = cur.fetchone()
 
     if not row:
@@ -164,13 +177,15 @@ def delete_account():
         conn.close()
         return jsonify({"success": False, "message": "Incorrect password"}), 400
 
-    cur.execute("DELETE FROM users WHERE email = ?", (email,))
+    cur.execute("DELETE FROM users WHERE email = %s", (email,))
     conn.commit()
     conn.close()
 
     return jsonify({"success": True, "message": "Account deleted"})
 
-
+# -------------------------------------------------
+# CHANGE PASSWORD
+# -------------------------------------------------
 @app.route("/change-password", methods=["POST"])
 def change_password():
     data = request.get_json() or {}
@@ -178,10 +193,10 @@ def change_password():
     old_password = data.get("old_password")
     new_password = data.get("new_password")
 
-    conn = sqlite3.connect("users.db", timeout=10)
+    conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("SELECT password FROM users WHERE email = ?", (email,))
+    cur.execute("SELECT password FROM users WHERE email = %s", (email,))
     row = cur.fetchone()
 
     if not row:
@@ -198,8 +213,8 @@ def change_password():
 
     cur.execute("""
         UPDATE users
-        SET password = ?
-        WHERE email = ?
+        SET password = %s
+        WHERE email = %s
     """, (new_hashed, email))
 
     conn.commit()
@@ -207,14 +222,12 @@ def change_password():
 
     return jsonify({"success": True, "message": "Password updated"})
 
-
 # -------------------------------------------------
 # Wakeup
 # -------------------------------------------------
 @app.route("/wakeup")
 def wakeup():
     return "awake", 200
-
 
 # -------------------------------------------------
 # Helpers
@@ -224,21 +237,19 @@ def safe_int(value, default=0):
         if value is None or value == "":
             return default
         return int(value)
-    except (TypeError, ValueError):
+    except:
         return default
-
 
 def safe_float(value, default=0.0):
     try:
         if value is None or value == "":
             return default
         return float(value)
-    except (TypeError, ValueError):
+    except:
         return default
 
-
 # -------------------------------------------------
-# Stripe Checkout Session
+# Stripe Checkout
 # -------------------------------------------------
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
@@ -289,44 +300,6 @@ def create_checkout_session():
             "quantity": vvip
         })
 
-    addons_breakdown = pricing.get("addonsBreakdown") or []
-    for addon in addons_breakdown:
-        label = addon.get("label", "Add-on")
-        amount = safe_float(addon.get("amount"), 0.0)
-        line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {"name": label},
-                "unit_amount": int(amount * 100)
-            },
-            "quantity": 1
-        })
-
-    booking_fee = safe_float(pricing.get("bookingFee"), 0.0)
-    if booking_fee > 0:
-        line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {"name": "Booking Fee"},
-                "unit_amount": int(booking_fee * 100)
-            },
-            "quantity": 1
-        })
-
-    vat = safe_float(pricing.get("vat"), 0.0)
-    if vat > 0:
-        line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {"name": "VAT (20%)"},
-                "unit_amount": int(vat * 100)
-            },
-            "quantity": 1
-        })
-
-    if not line_items:
-        return jsonify({"error": "No line items generated"}), 400
-
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -341,7 +314,6 @@ def create_checkout_session():
         print("STRIPE ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
-
 # -------------------------------------------------
 # Static files
 # -------------------------------------------------
@@ -353,9 +325,8 @@ def serve_index():
 def serve_files(filename):
     return send_from_directory(os.getcwd(), filename)
 
-
 # -------------------------------------------------
-# Local run
+# Run
 # -------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

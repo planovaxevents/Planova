@@ -3,3 +3,4 @@ flask-cors
 stripe
 gunicorn
 werkzeug
+psycopg2-binary
