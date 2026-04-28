@@ -148,151 +148,77 @@
 </section>
 
 <script>
-const passwordInput = document.getElementById("password");
-const strengthFill = document.getElementById("strength-fill");
-const registerBtn = document.getElementById("register-btn");
+const API_URL = "http://127.0.0.1:5000";
 
-// Rule elements
-const ruleLength = document.getElementById("rule-length");
-const ruleLower = document.getElementById("rule-lower");
-const ruleUpper = document.getElementById("rule-upper");
-const ruleNumber = document.getElementById("rule-number");
+const passwordInput = document.getElementById("password");
+const registerBtn = document.getElementById("register-btn");
 
 function validatePassword() {
   const pwd = passwordInput.value;
 
-  const hasLength = pwd.length >= 12 && pwd.length <= 60;
-  const hasLower = /[a-z]/.test(pwd);
-  const hasUpper = /[A-Z]/.test(pwd);
-  const hasNumberOrSpecial = /[0-9!@#$%^&*(),.?":{}|<>]/.test(pwd);
+  const ok =
+    pwd.length >= 12 &&
+    /[a-z]/.test(pwd) &&
+    /[A-Z]/.test(pwd) &&
+    /[0-9!@#$%^&*]/.test(pwd);
 
-  ruleLength.classList.toggle("valid", hasLength);
-  ruleLower.classList.toggle("valid", hasLower);
-  ruleUpper.classList.toggle("valid", hasUpper);
-  ruleNumber.classList.toggle("valid", hasNumberOrSpecial);
-
-  let score = 0;
-  if (hasLength) score++;
-  if (hasLower) score++;
-  if (hasUpper) score++;
-  if (hasNumberOrSpecial) score++;
-
-  const percent = (score / 4) * 100;
-  strengthFill.style.width = percent + "%";
-
-  if (score === 1) strengthFill.style.background = "red";
-  if (score === 2) strengthFill.style.background = "orange";
-  if (score === 3) strengthFill.style.background = "#ffcc00";
-  if (score === 4) strengthFill.style.background = "#00ff88";
-
-  registerBtn.disabled = score !== 4;
+  registerBtn.disabled = !ok;
 }
 
 passwordInput.addEventListener("input", validatePassword);
 
-// REGISTER
+
+// REGISTER (ONLY SENDS CODE, DOES NOT CREATE FINAL ACCOUNT)
 document.getElementById("register-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (registerBtn.disabled) {
-      alert("Your password does not meet the required rules.");
-      return;
-    }
+  const full_name = document.getElementById("full_name").value;
+  const email = document.getElementById("email").value;
+  const password = passwordInput.value;
 
-    const full_name = document.getElementById("full_name").value;
-    const email = document.getElementById("email").value;
-    const password = passwordInput.value;
+  const res = await fetch(`${API_URL}/register`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ full_name, email, password })
+  });
 
-    try {
-        const res = await fetch("http://127.0.0.1:5000/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ full_name, email, password })
-        });
+  const data = await res.json();
 
-        const data = await res.json();
+  if (data.success) {
+    document.getElementById("register-form").style.display = "none";
+    document.getElementById("verification-section").style.display = "block";
 
-        if (data.success) {
-            // SWITCH UI INSTEAD OF REDIRECT
-            document.getElementById("register-form").style.display = "none";
-            document.getElementById("verification-section").style.display = "block";
-
-            localStorage.setItem("verify_email", email);
-        } else {
-            alert(data.message);
-        }
-    } catch (err) {
-        alert("Unable to connect to server. Make sure your backend is running.");
-    }
+    localStorage.setItem("verify_email", email);
+  } else {
+    alert(data.message);
+  }
 });
 
-// VERIFY
+
+// VERIFY (FINAL STEP CREATES ACCOUNT AS VERIFIED)
 document.getElementById("verify-btn").addEventListener("click", async () => {
   const code = document.getElementById("verification-code").value;
   const email = localStorage.getItem("verify_email");
 
-  try {
-    const res = await fetch("http://127.0.0.1:5000/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      alert("Account verified!");
-
-      localStorage.setItem("planova_user", JSON.stringify({ email }));
-
-      window.location.href = "index.html";
-    } else {
-      alert(data.message || "Invalid code.");
-    }
-  } catch {
-    alert("Server error during verification.");
-  }
-});
-
-// RESEND CODE
-const resendBtn = document.getElementById("resend-btn");
-
-resendBtn.addEventListener("click", async () => {
-  const email = localStorage.getItem("verify_email");
-
-  resendBtn.classList.add("disabled");
-  resendBtn.innerText = "Sending...";
-
-  try {
-    await fetch("http://127.0.0.1:5000/resend-code", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email })
-    });
-
-    resendBtn.innerText = "Code Sent!";
-  } catch {
-    resendBtn.innerText = "Error. Try again.";
-  }
-
-  setTimeout(() => {
-    resendBtn.classList.remove("disabled");
-    resendBtn.innerText = "Resend Code";
-  }, 60000);
-});
-
-// Password toggle
-document.querySelectorAll(".toggle-password").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const input = btn.previousElementSibling;
-    input.type = input.type === "password" ? "text" : "password";
+  const res = await fetch(`${API_URL}/verify`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ email, code })
   });
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Verified!");
+
+    localStorage.setItem("planova_user", JSON.stringify({ email }));
+
+    window.location.href = "index.html";
+  } else {
+    alert(data.message);
+  }
 });
 </script>
-
-<script src="auth.js"></script>
 
 </body>
 </html>

@@ -422,18 +422,6 @@ document.querySelectorAll(".toggle-password")?.forEach(btn => {
 });
 
 // ===============================
-// REGISTER FORM (DEMO MODE)
-// ===============================
-const registerForm = document.getElementById("register-form");
-if (registerForm) {
-  registerForm.addEventListener("submit", e => {
-    e.preventDefault();
-    alert("Account created (demo mode)");
-    window.location.href = "signin.html";
-  });
-}
-
-// ===============================
 // COPY LINK BUTTON
 // ===============================
 document.querySelectorAll(".copy-link")?.forEach(btn => {

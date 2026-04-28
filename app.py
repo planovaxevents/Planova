@@ -9,22 +9,15 @@ import smtplib
 from email.mime.text import MIMEText
 
 app = Flask(__name__)
-
-# -------------------------------------------------
-# CORS
-# -------------------------------------------------
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# -------------------------------------------------
-# Stripe Setup
-# -------------------------------------------------
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
-# -------------------------------------------------
-# DB Setup (AUTO-UPGRADE SAFE)
-# -------------------------------------------------
+# -------------------------
+# DB
+# -------------------------
 def init_db():
     conn = sqlite3.connect("users.db", timeout=10)
     c = conn.cursor()
@@ -34,30 +27,23 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             full_name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            verified INTEGER DEFAULT 0,
+            verification_code TEXT
         )
     """)
-
-    try:
-        c.execute("ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0")
-    except:
-        pass
-
-    try:
-        c.execute("ALTER TABLE users ADD COLUMN verification_code TEXT")
-    except:
-        pass
 
     conn.commit()
     conn.close()
 
 init_db()
 
-# -------------------------------------------------
+# -------------------------
 # HELPERS
-# -------------------------------------------------
+# -------------------------
 def generate_code():
     return str(random.randint(100000, 999999))
+
 
 def send_email(to_email, code):
     try:
@@ -65,31 +51,35 @@ def send_email(to_email, code):
         email_pass = os.getenv("EMAIL_PASS")
 
         if not email_user or not email_pass:
-            print("EMAIL ERROR: Missing EMAIL_USER or EMAIL_PASS")
-            return
-
-        print(f"Sending email to {to_email} with code {code}")
+            print("EMAIL MISSING ENV VARS")
+            return False
 
         msg = MIMEText(f"Your Planova verification code is: {code}")
         msg["Subject"] = "Verify your Planova account"
         msg["From"] = email_user
         msg["To"] = to_email
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(email_user, email_pass)
-            server.send_message(msg)
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(email_user, email_pass)
+        server.send_message(msg)
+        server.quit()
 
-        print("EMAIL SENT SUCCESSFULLY")
+        print("EMAIL SENT")
+        return True
 
     except Exception as e:
         print("EMAIL ERROR:", e)
+        return False
 
-# -------------------------------------------------
-# Auth routes
-# -------------------------------------------------
+
+# -------------------------
+# REGISTER (TEMP ACCOUNT ONLY)
+# -------------------------
 @app.route("/register", methods=["POST"])
 def register():
     data = request.get_json() or {}
+
     full_name = data.get("full_name")
     email = data.get("email")
     password = data.get("password")
@@ -97,77 +87,71 @@ def register():
     if not full_name or not email or not password:
         return jsonify({"success": False, "message": "Missing fields"}), 400
 
-    hashed_pw = generate_password_hash(password)
     code = generate_code()
+    hashed_pw = generate_password_hash(password)
 
-    conn = None
-    try:
-        conn = sqlite3.connect("users.db", timeout=10)
-        c = conn.cursor()
+    conn = sqlite3.connect("users.db")
+    cur = conn.cursor()
 
-        # 🔥 Check if user exists
-        c.execute("SELECT verified FROM users WHERE email = ?", (email,))
-        existing = c.fetchone()
+    cur.execute("SELECT email FROM users WHERE email = ?", (email,))
+    exists = cur.fetchone()
 
-        if existing:
-            verified = existing[0]
+    if exists:
+        # overwrite unverified
+        cur.execute("""
+            UPDATE users
+            SET full_name=?, password=?, verification_code=?, verified=0
+            WHERE email=?
+        """, (full_name, hashed_pw, code, email))
+    else:
+        cur.execute("""
+            INSERT INTO users (full_name, email, password, verified, verification_code)
+            VALUES (?, ?, ?, 0, ?)
+        """, (full_name, email, hashed_pw, code))
 
-            if verified == 1:
-                return jsonify({"success": False, "message": "Email already registered"}), 400
+    conn.commit()
+    conn.close()
 
-            # overwrite unverified user
-            c.execute("""
-                UPDATE users
-                SET full_name = ?, password = ?, verification_code = ?, verified = 0
-                WHERE email = ?
-            """, (full_name, hashed_pw, code, email))
+    email_sent = send_email(email, code)
 
-        else:
-            # create new user
-            c.execute("""
-                INSERT INTO users (full_name, email, password, verified, verification_code)
-                VALUES (?, ?, ?, 0, ?)
-            """, (full_name, email, hashed_pw, code))
+    if not email_sent:
+        return jsonify({"success": False, "message": "Email failed"}), 500
 
-        conn.commit()
-
-        send_email(email, code)
-
-        return jsonify({"success": True, "message": "Verification code sent"})
-
-    except Exception as e:
-        print("REGISTER ERROR:", e)
-        return jsonify({"success": False, "message": "Server error"}), 500
-
-    finally:
-        if conn:
-            conn.close()
+    return jsonify({"success": True})
 
 
+# -------------------------
+# VERIFY (FINALISE ACCOUNT)
+# -------------------------
 @app.route("/verify", methods=["POST"])
 def verify():
     data = request.get_json() or {}
+
     email = data.get("email")
     code = data.get("code")
 
     conn = sqlite3.connect("users.db")
     cur = conn.cursor()
 
-    cur.execute("SELECT verification_code FROM users WHERE email = ?", (email,))
+    cur.execute("""
+        SELECT verification_code, password
+        FROM users WHERE email=?
+    """, (email,))
+
     row = cur.fetchone()
 
     if not row:
-        conn.close()
         return jsonify({"success": False, "message": "User not found"}), 400
 
-    if row[0] != code:
-        conn.close()
+    db_code, hashed_pw = row
+
+    if db_code != code:
         return jsonify({"success": False, "message": "Invalid code"}), 400
 
     cur.execute("""
         UPDATE users
-        SET verified = 1, verification_code = NULL
-        WHERE email = ?
+        SET verified=1, verification_code=NULL
+        WHERE email=?
     """, (email,))
 
     conn.commit()
@@ -176,26 +160,22 @@ def verify():
     return jsonify({"success": True})
 
 
+# -------------------------
+# RESEND
+# -------------------------
 @app.route("/resend-code", methods=["POST"])
 def resend_code():
     data = request.get_json() or {}
     email = data.get("email")
 
+    code = generate_code()
+
     conn = sqlite3.connect("users.db")
     cur = conn.cursor()
 
-    cur.execute("SELECT id FROM users WHERE email = ?", (email,))
-    user = cur.fetchone()
-
-    if not user:
-        conn.close()
-        return jsonify({"success": False, "message": "User not found"}), 400
-
-    code = generate_code()
-
     cur.execute("""
-        UPDATE users SET verification_code = ?
-        WHERE email = ?
+        UPDATE users SET verification_code=?
+        WHERE email=?
     """, (code, email))
 
     conn.commit()
@@ -206,32 +186,36 @@ def resend_code():
     return jsonify({"success": True})
 
 
+# -------------------------
+# LOGIN
+# -------------------------
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
+
     email = data.get("email")
     password = data.get("password")
 
-    conn = sqlite3.connect("users.db", timeout=10)
+    conn = sqlite3.connect("users.db")
     cur = conn.cursor()
-    cur.execute("SELECT full_name, password, verified FROM users WHERE email = ?", (email,))
+
+    cur.execute("SELECT full_name, password, verified FROM users WHERE email=?", (email,))
     row = cur.fetchone()
+
     conn.close()
 
     if not row:
-        return jsonify({"success": False, "message": "Email not found"}), 400
+        return jsonify({"success": False}), 400
 
     full_name, hashed_pw, verified = row
 
     if not verified:
-        return jsonify({"success": False, "message": "Please verify your email first"}), 403
+        return jsonify({"success": False, "message": "Verify first"}), 403
 
     if not check_password_hash(hashed_pw, password):
-        return jsonify({"success": False, "message": "Incorrect password"}), 400
+        return jsonify({"success": False}), 400
 
     return jsonify({"success": True, "full_name": full_name})
-
-
 # -------------------------------------------------
 # EXISTING ROUTES (UNCHANGED)
 # -------------------------------------------------
