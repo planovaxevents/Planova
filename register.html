@@ -212,13 +212,11 @@ font-size: 14px;
     });
   });
 
+  
 let emailVerified = false;
 
 const statusMsg = document.getElementById("statusMsg");
 const registerBtn = document.getElementById("registerBtn");
-
-// 🌐 IMPORTANT: use your deployed backend
-const BACKEND_URL = "https://planova-lwj9.onrender.com";
 
 // ---------------- SEND CODE ----------------
 document.getElementById("sendCodeBtn").addEventListener("click", async () => {
@@ -230,64 +228,49 @@ document.getElementById("sendCodeBtn").addEventListener("click", async () => {
     return;
   }
 
-  try {
-    // Wake backend (Render cold start fix)
-    await fetch(BACKEND_URL + "/wakeup");
+  const res = await fetch("http://127.0.0.1:5000/send_code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email })
+  });
 
-    const res = await fetch(BACKEND_URL + "/send_code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
+  const data = await res.json();
 
-    const data = await res.json();
-
-    if (data.success) {
-      statusMsg.textContent = "Verification code sent!";
-      statusMsg.className = "verify-status success";
-    } else {
-      statusMsg.textContent = data.message;
-      statusMsg.className = "verify-status error";
-    }
-
-  } catch (err) {
-    statusMsg.textContent = "Network error. Try again.";
+  if (data.success) {
+    statusMsg.textContent = "Verification code sent!";
+    statusMsg.className = "verify-status success";
+  } else {
+    statusMsg.textContent = data.message;
     statusMsg.className = "verify-status error";
   }
 });
 
-// ---------------- VERIFY CODE ----------------
+// ---------------- VERIFY CODE (FIXED) ----------------
 document.getElementById("codeInput").addEventListener("input", async () => {
   const code = document.getElementById("codeInput").value.trim();
   const email = document.getElementById("email").value;
 
   if (code.length !== 6) return;
 
-  try {
-    const res = await fetch(BACKEND_URL + "/verify_code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code })
-    });
+  const res = await fetch("http://127.0.0.1:5000/verify_code", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, code })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (data.success) {
-      emailVerified = true;
-      registerBtn.disabled = false;
+  if (data.success) {
+    emailVerified = true;
+    registerBtn.disabled = false;
 
-      statusMsg.textContent = "Email verified successfully!";
-      statusMsg.className = "verify-status success";
-    } else {
-      emailVerified = false;
-      registerBtn.disabled = true;
+    statusMsg.textContent = "Email verified successfully!";
+    statusMsg.className = "verify-status success";
+  } else {
+    emailVerified = false;
+    registerBtn.disabled = true;
 
-      statusMsg.textContent = data.message;
-      statusMsg.className = "verify-status error";
-    }
-
-  } catch (err) {
-    statusMsg.textContent = "Verification failed. Try again.";
+    statusMsg.textContent = data.message;
     statusMsg.className = "verify-status error";
   }
 });
@@ -326,29 +309,22 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
   const password = pwd.value;
   const code = document.getElementById("codeInput").value.trim();
 
-  try {
-    const res = await fetch(BACKEND_URL + "/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name, email, password, code })
-    });
+  const res = await fetch("http://127.0.0.1:5000/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ full_name, email, password, code })
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (data.success) {
-      localStorage.setItem("planova_user", JSON.stringify({ name: full_name, email }));
-      window.location.href = "index.html";
-    } else {
-      statusMsg.textContent = data.message;
-      statusMsg.className = "verify-status error";
-    }
-
-  } catch (err) {
-    statusMsg.textContent = "Registration failed. Try again.";
+  if (data.success) {
+    localStorage.setItem("planova_user", JSON.stringify({ name: full_name, email }));
+    window.location.href = "index.html";
+  } else {
+    statusMsg.textContent = data.message;
     statusMsg.className = "verify-status error";
   }
 });
-
 </script>
 
 </body>
