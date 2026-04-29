@@ -35,7 +35,7 @@ OTP_TTL = 300  # 5 minutes
 # EMAIL CONFIG
 # -------------------------------------------------
 EMAIL_ADDRESS = "planovaxevents@gmail.com"
-EMAIL_PASSWORD = "hxzo ogtb tuze imag"
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 def send_email(to_email, code):
     html = f"""
@@ -169,7 +169,7 @@ def send_code():
         send_email(email, code)
         return jsonify({"success": True, "message": "Code sent"})
     except Exception as e:
-        print("EMAIL ERROR:", e)
+        print("EMAIL ERROR FULL:", repr(e))
         return jsonify({"success": False, "message": "Email failed"}), 500
 
 # -------------------------------------------------
