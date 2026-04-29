@@ -766,12 +766,31 @@
         loadingEl.style.display = "block";
 
         var payload = {
-          event_id: eventData.id,
-          event_title: eventData.title,
-          standard: pending.standard || 0,
-          vip: pending.vip || 0,
-          price: eventData.price
-        };
+  event_id: eventData.id,
+  event_title: eventData.title,
+
+  // ticket quantities
+  standard: pending.standard || 0,
+  vip: pending.vip || 0,
+  vvip: pending.vvip || 0,
+
+  // base price (still useful fallback)
+  price: eventData.price,
+
+  // 🔥 CRITICAL: send FULL computed pricing
+  pricing: {
+    ticketSubtotal: ticketSubtotal,
+    addonsTotal: addonsTotal,
+    bookingFee: bookingFee,
+    vat: vat,
+    discount: discount,
+    total: total,
+    promoCode: promoCode
+  },
+
+  // optional extras
+  addons: pending.addons || []
+};
 
         if (typeof pending.vvip === "number") {
           payload.vvip = pending.vvip;

@@ -24,20 +24,91 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 FRONTEND_URL = "https://planova-lwj9.onrender.com"
 
 # -------------------------------------------------
-# OTP STORAGE (NEW - ADDED)
+# OTP STORAGE
 # -------------------------------------------------
 otp_store = {}
 # { email: { "code": "123456", "expires": 1234567890 } }
 
+OTP_TTL = 300  # 5 minutes
+
 # -------------------------------------------------
-# EMAIL CONFIG (SET THIS)
+# EMAIL CONFIG
 # -------------------------------------------------
 EMAIL_ADDRESS = "planovaxevents@gmail.com"
 EMAIL_PASSWORD = "hxzo ogtb tuze imag"
 
 def send_email(to_email, code):
-    msg = MIMEText(f"Your PLANOVA verification code is: {code}")
-    msg["Subject"] = "PLANOVA Email Verification"
+    html = f"""
+    <html>
+    <body style="margin:0;padding:0;background:#0b0b0b;font-family:Arial,sans-serif;">
+
+      <div style="max-width:600px;margin:0 auto;background:#111;border-radius:12px;overflow:hidden;border:1px solid #1f1f1f;">
+
+        <!-- HEADER -->
+        <div style="padding:30px;text-align:center;background:linear-gradient(135deg,#00ff88,#00c77a);">
+          <h1 style="margin:0;color:#0b0b0b;font-size:26px;letter-spacing:2px;">
+            PLANOVA
+          </h1>
+          <p style="margin:6px 0 0;color:#0b0b0b;font-size:13px;">
+            Secure Verification System
+          </p>
+        </div>
+
+        <!-- BODY -->
+        <div style="padding:35px;color:#ffffff;text-align:center;">
+
+          <h2 style="margin-bottom:10px;font-size:22px;">
+            Verify your email
+          </h2>
+
+          <p style="color:#bbb;font-size:14px;line-height:1.5;">
+            We received a request to create a PLANOVA account using this email address.
+            Use the verification code below to continue.
+          </p>
+
+          <!-- CODE BOX -->
+          <div style="
+            margin:25px auto;
+            padding:20px;
+            width:200px;
+            font-size:28px;
+            letter-spacing:6px;
+            font-weight:bold;
+            background:#000;
+            border:1px solid #00ff88;
+            border-radius:10px;
+            color:#00ff88;
+          ">
+            {code}
+          </div>
+
+          <p style="color:#888;font-size:12px;margin-top:10px;">
+            This code expires in <b>5 minutes</b>
+          </p>
+
+        
+
+          <!-- SECURITY NOTE -->
+          <div style="margin-top:30px;font-size:12px;color:#666;line-height:1.5;">
+            If you did not request this, you can safely ignore this email.<br>
+            Your account remains secure.
+          </div>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div style="padding:20px;text-align:center;background:#0a0a0a;color:#555;font-size:11px;">
+          © {time.strftime("%Y")} PLANOVA • All rights reserved
+        </div>
+
+      </div>
+
+    </body>
+    </html>
+    """
+
+    msg = MIMEText(html, "html")
+    msg["Subject"] = "Your PLANOVA Verification Code"
     msg["From"] = EMAIL_ADDRESS
     msg["To"] = to_email
 
@@ -46,7 +117,16 @@ def send_email(to_email, code):
         server.send_message(msg)
 
 # -------------------------------------------------
-# DB Setup
+# CLEANUP EXPIRED OTPs
+# -------------------------------------------------
+def cleanup_otps():
+    now = time.time()
+    expired = [email for email, v in otp_store.items() if v["expires"] < now]
+    for email in expired:
+        otp_store.pop(email, None)
+
+# -------------------------------------------------
+# DB INIT
 # -------------------------------------------------
 def init_db():
     conn = sqlite3.connect("users.db", timeout=10)
@@ -65,18 +145,20 @@ def init_db():
 init_db()
 
 # -------------------------------------------------
-# OTP ENDPOINT (NEW)
+# SEND CODE
 # -------------------------------------------------
 @app.route("/send_code", methods=["POST"])
 def send_code():
+    cleanup_otps()
+
     data = request.get_json() or {}
-    email = data.get("email")
+    email = (data.get("email") or "").strip().lower()
 
     if not email:
         return jsonify({"success": False, "message": "Email required"}), 400
 
     code = str(random.randint(100000, 999999))
-    expires = time.time() + 300  # 5 min expiry
+    expires = time.time() + OTP_TTL
 
     otp_store[email] = {
         "code": code,
@@ -88,24 +170,26 @@ def send_code():
         return jsonify({"success": True, "message": "Code sent"})
     except Exception as e:
         print("EMAIL ERROR:", e)
-        return jsonify({"success": False, "message": "Failed to send email"}), 500
-
+        return jsonify({"success": False, "message": "Email failed"}), 500
 
 # -------------------------------------------------
-# VERIFY CODE (OPTIONAL BUT USEFUL)
+# VERIFY CODE
 # -------------------------------------------------
 @app.route("/verify_code", methods=["POST"])
 def verify_code():
+    cleanup_otps()
+
     data = request.get_json() or {}
-    email = data.get("email")
-    code = data.get("code")
+    email = (data.get("email") or "").strip().lower()
+    code = (data.get("code") or "").strip()
 
     record = otp_store.get(email)
 
     if not record:
-        return jsonify({"success": False, "message": "No code sent"}), 400
+        return jsonify({"success": False, "message": "No code found"}), 400
 
     if time.time() > record["expires"]:
+        otp_store.pop(email, None)
         return jsonify({"success": False, "message": "Code expired"}), 400
 
     if record["code"] != code:
@@ -113,29 +197,30 @@ def verify_code():
 
     return jsonify({"success": True, "message": "Verified"})
 
-
 # -------------------------------------------------
-# AUTH ROUTES (UPDATED REGISTER ONLY)
+# REGISTER (OTP REQUIRED)
 # -------------------------------------------------
 @app.route("/register", methods=["POST"])
 def register():
+    cleanup_otps()
+
     data = request.get_json() or {}
 
     full_name = data.get("full_name")
-    email = data.get("email")
+    email = (data.get("email") or "").strip().lower()
     password = data.get("password")
-    code = data.get("code")  # 🔥 REQUIRED NOW
+    code = (data.get("code") or "").strip()
 
     if not full_name or not email or not password or not code:
         return jsonify({"success": False, "message": "Missing fields"}), 400
 
-    # VERIFY OTP BEFORE REGISTERING
     record = otp_store.get(email)
 
     if not record:
-        return jsonify({"success": False, "message": "No verification code sent"}), 403
+        return jsonify({"success": False, "message": "No verification code"}), 403
 
     if time.time() > record["expires"]:
+        otp_store.pop(email, None)
         return jsonify({"success": False, "message": "Code expired"}), 403
 
     if record["code"] != code:
@@ -155,7 +240,6 @@ def register():
 
         conn.commit()
 
-        # remove OTP after success
         otp_store.pop(email, None)
 
         return jsonify({"success": True, "message": "Account created!"})
@@ -171,14 +255,13 @@ def register():
         if conn:
             conn.close()
 
-
 # -------------------------------------------------
 # LOGIN (UNCHANGED)
 # -------------------------------------------------
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
-    email = data.get("email")
+    email = (data.get("email") or "").strip().lower()
     password = data.get("password")
 
     conn = sqlite3.connect("users.db", timeout=10)
@@ -196,7 +279,6 @@ def login():
         return jsonify({"success": False, "message": "Incorrect password"}), 400
 
     return jsonify({"success": True, "full_name": full_name})
-
 
 # -------------------------------------------------
 # DELETE ACCOUNT (UNCHANGED)
@@ -217,9 +299,7 @@ def delete_account():
         conn.close()
         return jsonify({"success": False, "message": "Account not found"}), 400
 
-    hashed_pw = row[0]
-
-    if not check_password_hash(hashed_pw, password):
+    if not check_password_hash(row[0], password):
         conn.close()
         return jsonify({"success": False, "message": "Incorrect password"}), 400
 
@@ -228,7 +308,6 @@ def delete_account():
     conn.close()
 
     return jsonify({"success": True, "message": "Account deleted"})
-
 
 # -------------------------------------------------
 # CHANGE PASSWORD (UNCHANGED)
@@ -250,18 +329,14 @@ def change_password():
         conn.close()
         return jsonify({"success": False, "message": "Account not found"}), 400
 
-    hashed_pw = row[0]
-
-    if not check_password_hash(hashed_pw, old_password):
+    if not check_password_hash(row[0], old_password):
         conn.close()
         return jsonify({"success": False, "message": "Incorrect current password"}), 400
 
     new_hashed = generate_password_hash(new_password)
 
     cur.execute("""
-        UPDATE users
-        SET password = ?
-        WHERE email = ?
+        UPDATE users SET password = ? WHERE email = ?
     """, (new_hashed, email))
 
     conn.commit()
@@ -269,35 +344,27 @@ def change_password():
 
     return jsonify({"success": True, "message": "Password updated"})
 
-
 # -------------------------------------------------
-# WAKEUP (UNCHANGED)
+# WAKEUP
 # -------------------------------------------------
 @app.route("/wakeup")
 def wakeup():
     return "awake", 200
 
-
 # -------------------------------------------------
-# HELPERS (UNCHANGED)
+# SAFE HELPERS
 # -------------------------------------------------
 def safe_int(value, default=0):
     try:
-        if value is None or value == "":
-            return default
-        return int(value)
+        return int(value) if value not in [None, ""] else default
     except:
         return default
-
 
 def safe_float(value, default=0.0):
     try:
-        if value is None or value == "":
-            return default
-        return float(value)
+        return float(value) if value not in [None, ""] else default
     except:
         return default
-
 
 # -------------------------------------------------
 # STRIPE (UNCHANGED)
@@ -305,57 +372,34 @@ def safe_float(value, default=0.0):
 @app.route("/create-checkout-session", methods=["POST"])
 def create_checkout_session():
     data = request.get_json() or {}
-    print("INCOMING CHECKOUT DATA:", data)
 
     event_title = data.get("event_title", "Event")
 
-    standard = safe_int(data.get("standard"), 0)
-    vip = safe_int(data.get("vip"), 0)
-    vvip = safe_int(data.get("vvip"), 0)
+    standard = safe_int(data.get("standard"))
+    vip = safe_int(data.get("vip"))
+    vvip = safe_int(data.get("vvip"))
 
-    pricing = data.get("pricing") or {}
-    base_price = safe_int(data.get("price"), 0)
+    pricing = data.get("pricing", {})
+    total = safe_float(pricing.get("total"))
 
-    if standard + vip + vvip == 0:
-        return jsonify({"error": "No tickets selected"}), 400
-
-    line_items = []
-
-    if standard > 0:
-        line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {"name": f"{event_title} – Standard Ticket"},
-                "unit_amount": base_price * 100
-            },
-            "quantity": standard
-        })
-
-    if vip > 0:
-        line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {"name": f"{event_title} – VIP Ticket"},
-                "unit_amount": base_price * 2 * 100
-            },
-            "quantity": vip
-        })
-
-    if vvip > 0:
-        line_items.append({
-            "price_data": {
-                "currency": "gbp",
-                "product_data": {"name": f"{event_title} – VVIP Ticket"},
-                "unit_amount": base_price * 4 * 100
-            },
-            "quantity": vvip
-        })
+    if total <= 0:
+        return jsonify({"error": "Invalid total amount"}), 400
 
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             mode="payment",
-            line_items=line_items,
+            line_items=[{
+                "price_data": {
+                    "currency": "gbp",
+                    "product_data": {
+                        "name": event_title,
+                        "description": f"{standard} Standard, {vip} VIP, {vvip} VVIP tickets"
+                    },
+                    "unit_amount": int(total * 100)
+                },
+                "quantity": 1
+            }],
             success_url=f"{FRONTEND_URL}/success.html",
             cancel_url=f"{FRONTEND_URL}/checkout.html"
         )
@@ -366,9 +410,8 @@ def create_checkout_session():
         print("STRIPE ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
-
 # -------------------------------------------------
-# STATIC FILES (UNCHANGED)
+# STATIC
 # -------------------------------------------------
 @app.route("/")
 def serve_index():
@@ -377,7 +420,6 @@ def serve_index():
 @app.route("/<path:filename>")
 def serve_files(filename):
     return send_from_directory(os.getcwd(), filename)
-
 
 # -------------------------------------------------
 # RUN

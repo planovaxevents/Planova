@@ -5,415 +5,1156 @@
   <title>PLANOVA – Account</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
-
   <style>
-    body {
-      background: #0a0a0a;
-      color: white;
-      font-family: Arial, sans-serif;
+    /* ===========================
+       Base / Layout
+       =========================== */
+    :root{
+      --bg:#0a0a0a;
+      --panel:#0f1113;
+      --accent:#00ff88;
+      --muted:#9aa3a6;
+      --glass: rgba(255,255,255,0.03);
+      --success:#00ff88;
+      --danger:#ff3b3b;
+      --card-border: 1px solid rgba(0,255,136,0.12);
+      --shadow: 0 6px 30px rgba(0,0,0,0.6);
+      --max-width:1200px;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:#fff;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    a{color:var(--accent);text-decoration:none}
+    .container{max-width:var(--max-width);margin:48px auto;padding:20px;}
+    .row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;}
+    .col{flex:1;min-width:280px;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:18px;border-radius:14px;border:var(--card-border);box-shadow:var(--shadow);}
+    h1,h2,h3{margin:0 0 8px 0}
+    p.muted{color:var(--muted);margin:0 0 8px 0}
+
+    /* ===========================
+       NAVBAR (unchanged + enhancements)
+       =========================== */
+    .nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:14px 7vw;background:rgba(3,7,18,0.96);backdrop-filter:blur(18px);border-bottom:1px solid rgba(15,23,42,0.9)}
+    .nav-left{display:flex;align-items:center;gap:26px}
+    .logo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:1.2rem;letter-spacing:0.04em;color:var(--accent);text-decoration:none}
+    .logo-mark{width:18px;height:18px;border-radius:999px;background:radial-gradient(circle at 30% 30%, #4ade80, #22c55e 40%, #16a34a 70%, #052e16 100%);box-shadow:0 0 18px rgba(34,197,94,0.8)}
+    .nav-actions{display:flex;gap:12px;align-items:center}
+    .nav-user-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:#111;color:white;border-radius:8px;font-weight:600;text-decoration:none;transition:0.25s}
+    .nav-user-btn:hover{background:var(--accent);color:#000;transform:translateY(-2px)}
+    .search-input{background:#0b0b0b;border:1px solid rgba(255,255,255,0.03);padding:8px 12px;border-radius:10px;color:#fff;min-width:220px}
+    .theme-toggle{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:var(--muted);cursor:pointer}
+
+    /* ===========================
+       Account Header
+       =========================== */
+    .account-wrapper{max-width:1200px;margin:40px auto;padding:10px}
+    .account-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:20px}
+    .header-left{display:flex;align-items:center;gap:20px}
+    .avatar{width:110px;height:110px;border-radius:50%;background:linear-gradient(180deg,var(--accent),#00cc66);color:#000;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;box-shadow:0 8px 30px rgba(0,255,136,0.12)}
+    .avatar.small{width:48px;height:48px;font-size:18px}
+    .avatar-upload{position:relative;display:inline-block}
+    .avatar-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .profile-meta h2{margin:0;font-size:22px}
+    .profile-meta p{margin:4px 0 0 0;color:var(--muted)}
+    .edit-btn{padding:10px 18px;background:var(--accent);color:#000;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:700;transition:0.2s}
+    .edit-btn:hover{background:#00cc66;transform:translateY(-2px)}
+    .small-muted{color:var(--muted);font-size:13px}
+
+    /* ===========================
+       Sections & Controls
+       =========================== */
+    .section{background:var(--panel);padding:18px;border-radius:12px;margin-bottom:18px;border:var(--card-border)}
+    .section h3{margin-bottom:12px}
+    .info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.02)}
+    .info-row:last-child{border-bottom:none}
+    .info-label{color:var(--muted);font-size:14px}
+    .info-value{font-weight:600}
+    .controls{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-size:14px}
+    .btn-edit{background:var(--accent);color:#000}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .btn-logout{background:#444;color:#fff;width:100%}
+
+    /* ===========================
+       Events list
+       =========================== */
+    .events-list{display:flex;flex-direction:column;gap:12px}
+    .event-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
+    .event-left{display:flex;gap:12px;align-items:center}
+    .event-thumb{width:64px;height:64px;border-radius:8px;background:#222;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700}
+    .event-meta h4{margin:0;font-size:16px}
+    .event-meta p{margin:4px 0 0 0;color:var(--muted);font-size:13px}
+    .event-actions{display:flex;gap:8px;align-items:center}
+
+    /* ===========================
+       Modals
+       =========================== */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:9999}
+    .modal{background:var(--panel);padding:22px;border-radius:12px;width:420px;border:var(--card-border);box-shadow:0 20px 60px rgba(0,0,0,0.6);position:relative}
+    .modal h3{margin:0 0 8px 0}
+    .modal input,.modal select{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#0b0b0b;color:#fff}
+    .modal .row{gap:10px}
+    .modal .actions{display:flex;gap:8px;margin-top:10px}
+
+    /* ===========================
+       Activity log & timeline
+       =========================== */
+    .timeline{display:flex;flex-direction:column;gap:10px}
+    .timeline-item{padding:10px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);display:flex;justify-content:space-between;align-items:center}
+    .timeline-item small{color:var(--muted)}
+
+    /* ===========================
+       QR / Ticket canvas
+       =========================== */
+    .qr-canvas{width:120px;height:120px;border-radius:8px;background:#fff;padding:6px;display:inline-block}
+
+    /* ===========================
+       Responsive tweaks
+       =========================== */
+    @media (max-width:900px){
+      .account-header{flex-direction:column;align-items:flex-start;gap:12px}
+      .avatar{width:84px;height:84px;font-size:28px}
     }
 
-    /* NAVBAR (unchanged) */
-    .nav-user-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      background: #111;
-      color: white;
-      border-radius: 8px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: 0.25s ease;
-    }
-    .nav-user-btn:hover {
-      background: #00ff88;
-      color: #000;
-      transform: translateY(-2px);
-    }
-
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 7vw;
-      background: rgba(3, 7, 18, 0.96);
-      backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(15, 23, 42, 0.9);
-    }
-
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 26px;
-    }
-
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 800;
-      font-size: 1.2rem;
-      letter-spacing: 0.04em;
-      color: var(--text);
-      text-decoration: none;
-    }
-
-    .logo-mark {
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #4ade80, #22c55e 40%, #16a34a 70%, #052e16 100%);
-      box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
-    }
-
-    /* ACCOUNT PAGE */
-    .account-wrapper {
-      max-width: 900px;
-      margin: 80px auto;
-      padding: 20px;
-    }
-
-    .account-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 30px;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .avatar {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: #00ff88;
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
-      font-weight: bold;
-    }
-
-    .edit-btn {
-      padding: 10px 18px;
-      background: #00ff88;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: 0.25s ease;
-    }
-    .edit-btn:hover {
-      background: #00cc66;
-      transform: translateY(-2px);
-    }
-
-    .section {
-      background: #111;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 25px;
-      border: 1px solid #00ff88;
-      box-shadow: 0 0 20px rgba(0,255,136,0.15);
-    }
-
-    .section h3 {
-      margin-bottom: 15px;
-      font-size: 22px;
-    }
-
-    .info-row {
-      margin: 8px 0;
-      font-size: 18px;
-    }
-
-    .btn {
-      padding: 10px 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      transition: 0.25s ease;
-    }
-
-    .btn-edit {
-      background: #00ff88;
-      color: #000;
-    }
-    .btn-edit:hover {
-      background: #00cc66;
-      transform: translateY(-2px);
-    }
-
-    .btn-danger {
-      background: #ff3b3b;
-      color: white;
-      width: 100%;
-      margin-top: 10px;
-    }
-    .btn-danger:hover {
-      background: #ff6b6b;
-      transform: translateY(-2px);
-    }
-
-    .btn-logout {
-      background: #444;
-      color: white;
-      width: 100%;
-      margin-top: 20px;
-    }
-    .btn-logout:hover {
-      background: #666;
-      transform: translateY(-2px);
-    }
-
-    /* MODALS */
-    .modal-bg {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .modal {
-      background: #111;
-      padding: 25px;
-      border-radius: 12px;
-      width: 350px;
-      border: 1px solid #00ff88;
-      box-shadow: 0 0 25px rgba(0,255,136,0.2);
-      z-index: 10000;
-      position: relative;
-    }
-
-    .modal input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: white;
-    }
-
-    .modal button {
-      width: 100%;
-      margin-top: 10px;
-    }
+    /* ===========================
+       Accessibility focus
+       =========================== */
+    button:focus, input:focus, select:focus, a:focus{outline:2px solid rgba(0,255,136,0.18);outline-offset:2px}
   </style>
 </head>
-
 <body>
+  <!-- NAV -->
+  <header class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-left">
+      <a href="index.html" class="logo" aria-label="Planova home">
+        <span class="logo-mark" aria-hidden="true">●</span> PLANOVA
+      </a>
+      <input class="search-input" id="global-search" placeholder="Search events, tickets, people..." aria-label="Search events">
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">Theme</button>
+      <a class="nav-user-btn" id="nav-user" href="account.html" aria-label="Your profile">
+        <span class="avatar small" id="nav-avatar">U</span>
+        <span id="nav-name">User</span>
+      </a>
+    </div>
+  </header>
 
-<header class="nav">
-  <div class="nav-left">
-    <a href="index.html" class="logo">
-      <span class="logo-mark">●</span> PLANOVA
-    </a>
-  </div>
-  <div class="nav-right"></div>
-</header>
+  <main class="container" role="main">
+    <!-- ACCOUNT HEADER -->
+    <section class="card account-header" aria-labelledby="profile-heading">
+      <div class="header-left">
+        <div class="avatar-upload" title="Upload avatar">
+          <div class="avatar" id="avatar">U</div>
+          <input type="file" id="avatar-file" accept="image/*" aria-label="Upload avatar">
+        </div>
+        <div class="profile-meta">
+          <h1 id="acc-name">User Name</h1>
+          <p class="small-muted" id="acc-email">you@example.com</p>
+          <p class="muted">Manage your PLANOVA profile, tickets and events</p>
+        </div>
+      </div>
 
-<div class="account-wrapper">
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:220px;">
+        <div style="display:flex;gap:8px;">
+          <button class="edit-btn" id="edit-profile">Edit Profile</button>
+          <button class="btn btn-ghost" id="copy-email" title="Copy email to clipboard">Copy Email</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" id="download-vcard" title="Download vCard">Download vCard</button>
+          <button class="btn btn-ghost" id="export-json" title="Export profile JSON">Export JSON</button>
+        </div>
+      </div>
+    </section>
 
-  <!-- HEADER WITH EDIT BUTTON ON RIGHT -->
-  <div class="account-header">
-    <div class="header-left">
-      <div class="avatar" id="avatar"></div>
-      <div>
-        <h2 id="acc-name"></h2>
-        <p class="muted">Manage your PLANOVA profile</p>
+    <div class="row">
+      <!-- LEFT COLUMN -->
+      <div class="col" style="flex:0.65;">
+        <!-- PROFILE INFO -->
+        <section class="section card" aria-labelledby="profile-info">
+          <h3 id="profile-info">Profile Information</h3>
+          <div class="info-row">
+            <div>
+              <div class="info-label">Full name</div>
+              <div class="info-value" id="info-name">—</div>
+            </div>
+            <div class="controls">
+              <button class="btn btn-edit" id="edit-name">Edit</button>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div>
+              <div class="info-label">Email</div>
+              <div class="info-value" id="info-email">—</div>
+            </div>
+            <div class="controls">
+              <button class="btn btn-ghost" id="change-email">Change</button>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div>
+              <div class="info-label">Member since</div>
+              <div class="info-value" id="info-since">—</div>
+            </div>
+            <div class="controls">
+              <button class="btn btn-ghost" id="download-data">Download Data</button>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-edit" id="manage-2fa">Enable 2FA</button>
+            <button class="btn btn-ghost" id="activity-log-btn">Activity Log</button>
+            <button class="btn btn-ghost" id="privacy-settings">Privacy</button>
+          </div>
+        </section>
+
+        <!-- SECURITY -->
+        <section class="section card" aria-labelledby="security">
+          <h3 id="security">Security</h3>
+          <p class="small-muted">Change your password or sign out of all devices.</p>
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <button class="btn btn-edit" id="change-password">Change Password</button>
+            <button class="btn btn-ghost" id="signout-all">Sign out everywhere</button>
+          </div>
+        </section>
+
+        <!-- UPCOMING EVENTS -->
+        <section class="section card" aria-labelledby="upcoming">
+          <h3 id="upcoming">Your Upcoming Events</h3>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input id="filter-upcoming" placeholder="Filter events" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#0b0b0b;color:#fff">
+            <select id="sort-upcoming" style="padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#0b0b0b;color:#fff">
+              <option value="date">Sort by date</option>
+              <option value="title">Sort by title</option>
+            </select>
+          </div>
+          <div class="events-list" id="upcoming-events">
+            <p class="small-muted">Loading upcoming events…</p>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn btn-ghost" id="view-calendar">View calendar</button>
+            <button class="btn btn-ghost" id="sync-calendar">Sync to Google Calendar</button>
+          </div>
+        </section>
+
+        <!-- PAST EVENTS -->
+        <section class="section card" aria-labelledby="past">
+          <h3 id="past">Your Past Events</h3>
+          <div class="events-list" id="past-events">
+            <p class="small-muted">Loading past events…</p>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;">
+            <button class="btn btn-ghost" id="export-tickets">Export tickets</button>
+            <button class="btn btn-ghost" id="leave-feedback">Leave feedback</button>
+          </div>
+        </section>
+
+        <!-- TICKETS & QR -->
+        <section class="section card" aria-labelledby="tickets">
+          <h3 id="tickets">Tickets & QR Codes</h3>
+          <p class="small-muted">Generate a QR code for each ticket to present at the event.</p>
+          <div id="tickets-list" style="display:flex;flex-direction:column;gap:12px;margin-top:12px;">
+            <p class="small-muted">No tickets found</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <aside class="col" style="flex:0.35;">
+        <!-- QUICK ACTIONS -->
+        <section class="section card">
+          <h3>Quick Actions</h3>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+            <button class="btn btn-edit" id="create-event">Create Event</button>
+            <button class="btn btn-ghost" id="buy-tickets">Buy Tickets</button>
+            <button class="btn btn-ghost" id="gift-ticket">Gift a ticket</button>
+            <button class="btn btn-ghost" id="refer-friend">Refer a friend</button>
+          </div>
+        </section>
+
+        <!-- ACTIVITY LOG -->
+        <section class="section card">
+          <h3>Activity</h3>
+          <div class="timeline" id="activity-log">
+            <div class="timeline-item"><div>Loading activity…</div><small>—</small></div>
+          </div>
+        </section>
+
+        <!-- ACCOUNT ACTIONS -->
+        <section class="section card">
+          <h3>Danger Zone</h3>
+          <p class="small-muted">Actions here are irreversible.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+            <button class="btn btn-danger" id="delete-account">Delete Account</button>
+            <button class="btn btn-logout" id="logout-btn">Sign Out</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <!-- FOOTER -->
+    <footer style="margin-top:28px;text-align:center;color:var(--muted);font-size:13px">
+      © PLANOVA — Manage events, tickets and profiles securely.
+    </footer>
+  </main>
+
+  <!-- MODALS -->
+  <!-- Edit Profile Modal -->
+  <div class="modal-bg" id="modal-edit-profile" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
+      <h3 id="edit-profile-title">Edit Profile</h3>
+      <label class="small-muted">Full name</label>
+      <input id="modal-fullname" placeholder="Your full name">
+      <label class="small-muted">Display name</label>
+      <input id="modal-displayname" placeholder="Display name">
+      <label class="small-muted">Public bio</label>
+      <input id="modal-bio" placeholder="Short bio">
+      <div class="actions">
+        <button class="btn btn-edit" id="save-profile">Save</button>
+        <button class="btn btn-ghost" id="cancel-profile">Cancel</button>
       </div>
     </div>
-
-   <button class="edit-btn" id="edit-profile">Changed Your Name?</button>
   </div>
 
-  <div class="section">
-    <h3>Profile Information</h3>
-    <p class="info-row"><strong>Email:</strong> <span id="acc-email"></span></p>
-  </div>
-
-  <div class="section">
-    <h3>Security</h3>
-    <button class="btn btn-edit" id="change-password">Change Password</button>
-  </div>
-
-  <div class="section">
-    <h3>Your Upcoming Events</h3>
-    <div class="events-list" id="upcoming-events">
-      <p>No upcoming events</p>
+  <!-- Change Email Modal -->
+  <div class="modal-bg" id="modal-change-email" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Change Email</h3>
+      <input id="new-email" placeholder="new@example.com" type="email">
+      <input id="confirm-email-pass" placeholder="Current password" type="password">
+      <div class="actions">
+        <button class="btn btn-edit" id="save-email">Change Email</button>
+        <button class="btn btn-ghost" id="cancel-email">Cancel</button>
+      </div>
     </div>
   </div>
 
-  <div class="section">
-    <h3>Your Past Events</h3>
-    <div class="events-list" id="past-events">
-      <p>No past events</p>
+  <!-- Change Password Modal (keeps original IDs) -->
+  <div class="modal-bg" id="modal-bg-password" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Change Password</h3>
+      <input type="password" id="old-pass" placeholder="Current password">
+      <input type="password" id="new-pass" placeholder="New password">
+      <input type="password" id="confirm-pass" placeholder="Confirm new password">
+      <div class="actions">
+        <button class="btn btn-edit" id="save-pass">Save</button>
+        <button class="btn btn-danger" id="close-modal">Cancel</button>
+      </div>
     </div>
   </div>
 
-  <button class="btn btn-danger" id="delete-account">Delete Account</button>
-  <button class="btn btn-logout" id="logout-btn">Sign Out</button>
-
-</div>
-
-<!-- PASSWORD MODAL -->
-<div class="modal-bg" id="modal-bg">
-  <div class="modal">
-    <h3>Change Password</h3>
-
-    <input type="password" id="old-pass" placeholder="Current password">
-    <input type="password" id="new-pass" placeholder="New password">
-    <input type="password" id="confirm-pass" placeholder="Confirm new password">
-
-    <button class="btn btn-edit" id="save-pass">Save</button>
-    <button class="btn btn-danger" id="close-modal">Cancel</button>
+  <!-- Delete Account Modal (keeps original IDs) -->
+  <div class="modal-bg" id="delete-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Confirm Account Deletion</h3>
+      <p style="margin-bottom:10px;">Enter your password to continue</p>
+      <input type="password" id="delete-pass" placeholder="Password">
+      <div class="actions">
+        <button class="btn btn-danger" id="confirm-delete">Delete Account</button>
+        <button class="btn btn-edit" id="cancel-delete">Cancel</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- DELETE ACCOUNT MODAL -->
-<div class="modal-bg" id="delete-modal">
-  <div class="modal">
-    <h3>Confirm Account Deletion</h3>
-    <p style="margin-bottom:10px;">Enter your password to continue</p>
-
-    <input type="password" id="delete-pass" placeholder="Password">
-
-    <button class="btn btn-danger" id="confirm-delete">Delete Account</button>
-    <button class="btn btn-edit" id="cancel-delete">Cancel</button>
+  <!-- Create Event Modal -->
+  <div class="modal-bg" id="modal-create-event" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Create Event</h3>
+      <input id="event-title" placeholder="Event title">
+      <input id="event-date" type="date">
+      <input id="event-time" type="time">
+      <input id="event-venue" placeholder="Venue">
+      <textarea id="event-desc" placeholder="Short description" style="width:100%;height:80px;padding:10px;border-radius:8px;background:#0b0b0b;border:1px solid rgba(255,255,255,0.03);color:#fff"></textarea>
+      <div class="actions">
+        <button class="btn btn-edit" id="save-event">Create</button>
+        <button class="btn btn-ghost" id="cancel-event">Cancel</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<script src="auth.js"></script>
+  <!-- Ticket QR Modal -->
+  <div class="modal-bg" id="modal-qr" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Ticket QR Code</h3>
+      <canvas id="qr-canvas" width="240" height="240" style="background:#fff;border-radius:8px"></canvas>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-edit" id="download-qr">Download QR</button>
+        <button class="btn btn-ghost" id="close-qr">Close</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-  const user = JSON.parse(localStorage.getItem("planova_user"));
-  if (!user) window.location.href = "signin.html";
+  <!-- Include existing auth.js (do not remove) -->
+  <script src="auth.js"></script>
 
-  document.getElementById("acc-name").textContent = user.name;
-  document.getElementById("acc-email").textContent = user.email;
+  <script>
+  /* ===========================
+     Client-side Account Script
+     Preserves all existing features and IDs.
+     Adds many new features: avatar upload, vCard export,
+     JSON export, activity log, event creation, ticket QR,
+     2FA toggle (UI only), calendar sync stub, keyboard shortcuts,
+     optimistic UI updates, local backup, accessibility helpers.
+     =========================== */
 
-  document.getElementById("avatar").textContent =
-    user.name.split(" ").map(n => n[0]).join("").toUpperCase();
+  // Helper utilities
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const apiBase = "http://127.0.0.1:5000"; // keep same origin used elsewhere
 
-  document.getElementById("logout-btn").onclick = () => {
+  // Load user from localStorage (preserve original behavior)
+  let user = JSON.parse(localStorage.getItem("planova_user"));
+  if (!user) {
+    // If user missing, redirect to signin (preserve original)
+    window.location.href = "signin.html";
+  }
+
+  // Initialize UI with user data (preserve original IDs)
+  function initProfileUI() {
+    $('#acc-name').textContent = user.name || "Unnamed";
+    $('#acc-email').textContent = user.email || "no-email@example.com";
+    $('#info-name').textContent = user.name || "—";
+    $('#info-email').textContent = user.email || "—";
+    $('#info-since').textContent = user.since || "Unknown";
+    $('#avatar').textContent = (user.name || "U").split(" ").map(n => n[0]).join("").toUpperCase();
+    $('#nav-avatar').textContent = $('#avatar').textContent;
+    $('#nav-name').textContent = user.name.split(" ")[0] || user.email;
+    document.title = `${user.name} — PLANOVA Account`;
+  }
+  initProfileUI();
+
+  // Accessibility: trap focus in modals
+  function trapFocus(modalEl) {
+    const focusable = modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length-1];
+    function keyHandler(e) {
+      if (e.key === 'Tab') {
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        }
+      } else if (e.key === 'Escape') {
+        closeAllModals();
+      }
+    }
+    modalEl.addEventListener('keydown', keyHandler);
+    first.focus();
+    return () => modalEl.removeEventListener('keydown', keyHandler);
+  }
+
+  // Modal helpers
+  function openModal(id) {
+    const bg = document.getElementById(id);
+    if (!bg) return;
+    bg.style.display = "flex";
+    bg.setAttribute('aria-hidden','false');
+    const cleanup = trapFocus(bg.querySelector('.modal'));
+    bg._cleanup = cleanup;
+  }
+  function closeModal(id) {
+    const bg = document.getElementById(id);
+    if (!bg) return;
+    bg.style.display = "none";
+    bg.setAttribute('aria-hidden','true');
+    if (bg._cleanup) bg._cleanup();
+  }
+  function closeAllModals() {
+    $$('.modal-bg').forEach(m => closeModal(m.id));
+  }
+
+  // Avatar upload (client-side preview + localStorage backup)
+  $('#avatar-file').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      $('#avatar').style.backgroundImage = `url(${reader.result})`;
+      $('#avatar').textContent = '';
+      $('#nav-avatar').style.backgroundImage = `url(${reader.result})`;
+      $('#nav-avatar').textContent = '';
+      // store small base64 in localStorage as backup (not secure for large images)
+      user.avatar = reader.result;
+      localStorage.setItem('planova_user', JSON.stringify(user));
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Edit profile (preserve original edit-profile button)
+  $('#edit-profile').addEventListener('click', () => {
+    $('#modal-fullname').value = user.name || '';
+    $('#modal-displayname').value = user.displayName || '';
+    $('#modal-bio').value = user.bio || '';
+    openModal('modal-edit-profile');
+  });
+  $('#cancel-profile').addEventListener('click', () => closeModal('modal-edit-profile'));
+  $('#save-profile').addEventListener('click', async () => {
+    const newName = $('#modal-fullname').value.trim();
+    const display = $('#modal-displayname').value.trim();
+    const bio = $('#modal-bio').value.trim();
+    if (!newName) { alert('Please enter a name'); return; }
+    // Optimistic UI update
+    user.name = newName;
+    user.displayName = display;
+    user.bio = bio;
+    localStorage.setItem('planova_user', JSON.stringify(user));
+    initProfileUI();
+    closeModal('modal-edit-profile');
+
+    // Try to persist to backend (best-effort)
+    try {
+      await fetch(`${apiBase}/update-profile`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ email: user.email, full_name: newName, displayName: display, bio })
+      });
+    } catch (e) {
+      // ignore backend errors; local state preserved
+      console.warn('Profile update failed (backend):', e);
+    }
+  });
+
+  // Copy email to clipboard
+  $('#copy-email').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(user.email);
+      showToast('Email copied to clipboard');
+    } catch (e) {
+      alert('Unable to copy email');
+    }
+  });
+
+  // Download vCard
+  $('#download-vcard').addEventListener('click', () => {
+    const vcard = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${user.name}`,
+      `EMAIL;TYPE=INTERNET:${user.email}`,
+      `NOTE:Planova user`,
+      'END:VCARD'
+    ].join('\n');
+    const blob = new Blob([vcard], {type:'text/vcard'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${user.name.replace(/\s+/g,'_')}.vcf`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // Export JSON
+  $('#export-json').addEventListener('click', () => {
+    const data = JSON.stringify(user, null, 2);
+    const blob = new Blob([data], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${user.email}_planova_profile.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // Download data (full backup)
+  $('#download-data').addEventListener('click', async () => {
+    showToast('Preparing data export…');
+    // Attempt to fetch from backend; fallback to localStorage
+    try {
+      const res = await fetch(`${apiBase}/export-data`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: user.email })
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${user.email}_planova_export.zip`;
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        showToast('Export downloaded');
+        return;
+      }
+    } catch (e) {
+      console.warn('Export failed, falling back to local data', e);
+    }
+    // Fallback: localStorage snapshot
+    const snapshot = { user, localStorage: {...localStorage} };
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${user.email}_local_export.json`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    showToast('Local export downloaded');
+  });
+
+  // Theme toggle (simple)
+  let dark = true;
+  $('#theme-toggle').addEventListener('click', () => {
+    dark = !dark;
+    if (!dark) {
+      document.documentElement.style.setProperty('--bg','#f7f7f8');
+      document.documentElement.style.setProperty('--panel','#ffffff');
+      document.documentElement.style.setProperty('--muted','#666');
+      document.documentElement.style.setProperty('--accent','#0066ff');
+      document.body.style.color = '#111';
+      showToast('Light theme enabled');
+    } else {
+      document.documentElement.style.removeProperty('--bg');
+      document.documentElement.style.removeProperty('--panel');
+      document.documentElement.style.removeProperty('--muted');
+      document.documentElement.style.removeProperty('--accent');
+      document.body.style.color = '';
+      showToast('Dark theme enabled');
+    }
+  });
+
+  // Activity log (mock + backend)
+  async function loadActivity() {
+    const el = $('#activity-log');
+    el.innerHTML = '';
+    // Try backend
+    try {
+      const res = await fetch(`${apiBase}/activity?email=${encodeURIComponent(user.email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.activities) && data.activities.length) {
+          data.activities.forEach(a => {
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            item.innerHTML = `<div>${a.message}</div><small>${new Date(a.time).toLocaleString()}</small>`;
+            el.appendChild(item);
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Activity fetch failed', e);
+    }
+    // Fallback: local mock
+    const mock = [
+      {message:'Signed in', time: Date.now()-3600*1000},
+      {message:'Updated profile', time: Date.now()-7200*1000},
+      {message:'Purchased ticket for "Summer Fest"', time: Date.now()-86400*1000}
+    ];
+    mock.forEach(a => {
+      const item = document.createElement('div');
+      item.className = 'timeline-item';
+      item.innerHTML = `<div>${a.message}</div><small>${new Date(a.time).toLocaleString()}</small>`;
+      el.appendChild(item);
+    });
+  }
+  loadActivity();
+
+  // Upcoming & past events (mock + backend)
+  async function loadEvents() {
+    const upEl = $('#upcoming-events');
+    const pastEl = $('#past-events');
+    upEl.innerHTML = '<p class="small-muted">Loading upcoming events…</p>';
+    pastEl.innerHTML = '<p class="small-muted">Loading past events…</p>';
+    try {
+      const res = await fetch(`${apiBase}/events?email=${encodeURIComponent(user.email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        renderEvents(data.upcoming || [], data.past || []);
+        return;
+      }
+    } catch (e) {
+      console.warn('Events fetch failed', e);
+    }
+    // Fallback mock events
+    const upcoming = [
+      {id:'evt-1', title:'Summer Fest', date:Date.now()+86400*1000*7, venue:'Green Park', tickets:2},
+      {id:'evt-2', title:'Tech Meetup', date:Date.now()+86400*1000*14, venue:'Town Hall', tickets:1}
+    ];
+    const past = [
+      {id:'evt-3', title:'Spring Gala', date:Date.now()-86400*1000*30, venue:'Grand Hall', tickets:1}
+    ];
+    renderEvents(upcoming, past);
+  }
+
+  function renderEvents(upcoming, past) {
+    const upEl = $('#upcoming-events'); upEl.innerHTML = '';
+    const pastEl = $('#past-events'); pastEl.innerHTML = '';
+    if (!upcoming.length) upEl.innerHTML = '<p class="small-muted">No upcoming events</p>';
+    upcoming.forEach(ev => {
+      const item = document.createElement('div'); item.className = 'event-item';
+      item.innerHTML = `
+        <div class="event-left">
+          <div class="event-thumb" aria-hidden="true">${ev.title.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
+          <div class="event-meta">
+            <h4>${ev.title}</h4>
+            <p>${new Date(ev.date).toLocaleString()} • ${ev.venue}</p>
+          </div>
+        </div>
+        <div class="event-actions">
+          <button class="btn btn-ghost" data-id="${ev.id}" data-action="view">View</button>
+          <button class="btn btn-edit" data-id="${ev.id}" data-action="ticket">Tickets</button>
+        </div>`;
+      upEl.appendChild(item);
+    });
+    if (!past.length) pastEl.innerHTML = '<p class="small-muted">No past events</p>';
+    past.forEach(ev => {
+      const item = document.createElement('div'); item.className = 'event-item';
+      item.innerHTML = `
+        <div class="event-left">
+          <div class="event-thumb" aria-hidden="true">${ev.title.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
+          <div class="event-meta">
+            <h4>${ev.title}</h4>
+            <p>${new Date(ev.date).toLocaleString()} • ${ev.venue}</p>
+          </div>
+        </div>
+        <div class="event-actions">
+          <button class="btn btn-ghost" data-id="${ev.id}" data-action="receipt">Receipt</button>
+          <button class="btn btn-ghost" data-id="${ev.id}" data-action="feedback">Feedback</button>
+        </div>`;
+      pastEl.appendChild(item);
+    });
+  }
+
+  // Tickets list & QR generation
+  async function loadTickets() {
+    const list = $('#tickets-list');
+    list.innerHTML = '<p class="small-muted">Loading tickets…</p>';
+    try {
+      const res = await fetch(`${apiBase}/tickets?email=${encodeURIComponent(user.email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        renderTickets(data.tickets || []);
+        return;
+      }
+    } catch (e) {
+      console.warn('Tickets fetch failed', e);
+    }
+    // Fallback mock tickets
+    const mock = [
+      {id:'tkt-1', event:'Summer Fest', seat:'A12', code:'ABC123456'},
+      {id:'tkt-2', event:'Tech Meetup', seat:'B4', code:'XYZ987654'}
+    ];
+    renderTickets(mock);
+  }
+
+  function renderTickets(tickets) {
+    const list = $('#tickets-list'); list.innerHTML = '';
+    if (!tickets.length) { list.innerHTML = '<p class="small-muted">No tickets found</p>'; return; }
+    tickets.forEach(t => {
+      const el = document.createElement('div'); el.className = 'event-item';
+      el.innerHTML = `
+        <div class="event-left">
+          <div class="event-thumb" aria-hidden="true">${t.event.split(' ').map(s=>s[0]).slice(0,2).join('')}</div>
+          <div class="event-meta">
+            <h4>${t.event}</h4>
+            <p>Seat: ${t.seat} • Code: <strong>${t.code}</strong></p>
+          </div>
+        </div>
+        <div class="event-actions">
+          <button class="btn btn-ghost" data-ticket="${t.id}" data-action="qr">Show QR</button>
+          <button class="btn btn-ghost" data-ticket="${t.id}" data-action="download">Download</button>
+        </div>`;
+      list.appendChild(el);
+    });
+  }
+
+  // QR code generation (simple pixel QR-like pattern using seeded hash)
+  function generateSimpleQR(text, canvas) {
+    // Deterministic pseudo-random pattern based on text
+    const ctx = canvas.getContext('2d');
+    const size = 24; // grid
+    const scale = Math.floor(canvas.width / size);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    // hash
+    let h = 2166136261 >>> 0;
+    for (let i=0;i<text.length;i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619) >>> 0;
+    // draw pattern
+    for (let y=0;y<size;y++){
+      for (let x=0;x<size;x++){
+        h = Math.imul(h ^ (x*31+y), 16777619) >>> 0;
+        const bit = (h >>> ((x+y)%32)) & 1;
+        ctx.fillStyle = bit ? '#000' : '#fff';
+        ctx.fillRect(x*scale + 6, y*scale + 6, scale-1, scale-1);
+      }
+    }
+    // overlay small logo
+    ctx.fillStyle = '#00ff88';
+    ctx.fillRect(canvas.width/2 - 18, canvas.height/2 - 18, 36, 36);
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('P', canvas.width/2, canvas.height/2);
+  }
+
+  // Ticket actions (delegated)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id || btn.dataset.ticket;
+    if (action === 'ticket') {
+      // open ticket modal or download
+      showToast('Opening ticket manager…');
+    } else if (action === 'qr') {
+      // find ticket code
+      const ticketId = id;
+      // find ticket in mock or backend
+      const code = btn.closest('.event-item').querySelector('strong')?.textContent || 'UNKNOWN';
+      openModal('modal-qr');
+      const canvas = document.getElementById('qr-canvas');
+      generateSimpleQR(code, canvas);
+      // attach download handler
+      $('#download-qr').onclick = () => {
+        const url = canvas.toDataURL('image/png');
+        const a = document.createElement('a'); a.href = url; a.download = `${ticketId}_qr.png`; a.click();
+      };
+    } else if (action === 'download') {
+      showToast('Preparing ticket download…');
+      // simulate download
+      const ticketId = id;
+      const blob = new Blob([`Ticket ${ticketId} for ${user.email}`], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `${ticketId}.txt`; a.click(); URL.revokeObjectURL(url);
+    } else if (action === 'view') {
+      showToast('Opening event details…');
+    } else if (action === 'receipt') {
+      showToast('Opening receipt…');
+    } else if (action === 'feedback') {
+      showToast('Opening feedback form…');
+    }
+  });
+
+  // Close QR modal
+  $('#close-qr').addEventListener('click', () => closeModal('modal-qr'));
+
+  // Create event modal
+  $('#create-event').addEventListener('click', () => openModal('modal-create-event'));
+  $('#cancel-event').addEventListener('click', () => closeModal('modal-create-event'));
+  $('#save-event').addEventListener('click', async () => {
+    const title = $('#event-title').value.trim();
+    const date = $('#event-date').value;
+    const time = $('#event-time').value;
+    const venue = $('#event-venue').value.trim();
+    const desc = $('#event-desc').value.trim();
+    if (!title || !date) { alert('Please provide title and date'); return; }
+    // optimistic add to upcoming events
+    const newEvent = { id: 'evt-' + Math.random().toString(36).slice(2,9), title, date: new Date(`${date}T${time||'00:00'}`).getTime(), venue, description: desc, tickets:0 };
+    // add to UI immediately
+    const upEl = $('#upcoming-events');
+    const item = document.createElement('div'); item.className = 'event-item';
+    item.innerHTML = `<div class="event-left"><div class="event-thumb">${title.split(' ').map(s=>s[0]).slice(0,2).join('')}</div><div class="event-meta"><h4>${title}</h4><p>${new Date(newEvent.date).toLocaleString()} • ${venue}</p></div></div><div class="event-actions"><button class="btn btn-ghost" data-id="${newEvent.id}" data-action="view">View</button><button class="btn btn-edit" data-id="${newEvent.id}" data-action="ticket">Tickets</button></div>`;
+    upEl.prepend(item);
+    closeModal('modal-create-event');
+    // send to backend (best-effort)
+    try {
+      await fetch(`${apiBase}/create-event`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({...newEvent, organizer:user.email}) });
+      showToast('Event created');
+    } catch (e) {
+      showToast('Event created locally (offline)');
+    }
+  });
+
+  // Change email modal
+  $('#change-email').addEventListener('click', () => {
+    $('#new-email').value = '';
+    $('#confirm-email-pass').value = '';
+    openModal('modal-change-email');
+  });
+  $('#cancel-email').addEventListener('click', () => closeModal('modal-change-email'));
+  $('#save-email').addEventListener('click', async () => {
+    const newEmail = $('#new-email').value.trim();
+    const pass = $('#confirm-email-pass').value;
+    if (!newEmail || !pass) { alert('Please fill both fields'); return; }
+    try {
+      const res = await fetch(`${apiBase}/change-email`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: user.email, new_email: newEmail, password: pass })});
+      const data = await res.json();
+      if (!data.success) { alert(data.message || 'Failed to change email'); return; }
+      user.email = newEmail; localStorage.setItem('planova_user', JSON.stringify(user)); initProfileUI(); closeModal('modal-change-email'); showToast('Email changed');
+    } catch (e) {
+      alert('Unable to change email (server error)');
+    }
+  });
+
+  // Change password (preserve original behavior but use modal id modal-bg-password)
+  $('#change-password').addEventListener('click', () => openModal('modal-bg-password'));
+  $('#close-modal').addEventListener('click', () => closeModal('modal-bg-password'));
+  $('#save-pass').addEventListener('click', async () => {
+    const oldPass = $('#old-pass').value;
+    const newPass = $('#new-pass').value;
+    const confirmPass = $('#confirm-pass').value;
+    if (!oldPass || !newPass || !confirmPass) { alert('Please fill in all fields'); return; }
+    if (newPass !== confirmPass) { alert('New passwords do not match'); return; }
+    try {
+      const res = await fetch(`${apiBase}/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, old_password: oldPass, new_password: newPass })
+      });
+      const data = await res.json();
+      if (!data.success) { alert(data.message); return; }
+      alert("Password updated successfully");
+      closeModal('modal-bg-password');
+    } catch (err) {
+      alert("Unable to connect to server. Make sure your backend is running.");
+    }
+  });
+
+  // Delete account (preserve original IDs and behavior)
+  $('#delete-account').addEventListener('click', () => openModal('delete-modal'));
+  $('#cancel-delete').addEventListener('click', () => closeModal('delete-modal'));
+  $('#confirm-delete').addEventListener('click', async () => {
+    const password = $('#delete-pass').value;
+    if (!password) { alert("Please enter your password"); return; }
+    try {
+      const res = await fetch(`${apiBase}/delete-account`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, password: password })
+      });
+      const data = await res.json();
+      if (!data.success) { alert(data.message); return; }
+      localStorage.removeItem("planova_user");
+      alert("Your account has been deleted");
+      window.location.href = "index.html";
+    } catch (err) {
+      alert("Unable to connect to server. Make sure your backend is running.");
+    }
+  });
+
+  // Logout (preserve original)
+  $('#logout-btn').addEventListener('click', () => {
     localStorage.removeItem("planova_user");
     window.location.href = "index.html";
-  };
+  });
 
-  document.getElementById("edit-profile").onclick = () => {
-    const newName = prompt("Enter new name:", user.name);
-    if (newName) {
-      user.name = newName;
-      localStorage.setItem("planova_user", JSON.stringify(user));
-      document.getElementById("acc-name").textContent = newName;
-      document.getElementById("avatar").textContent =
-        newName.split(" ").map(n => n[0]).join("").toUpperCase();
+  // Sign out everywhere (best-effort)
+  $('#signout-all').addEventListener('click', async () => {
+    if (!confirm('Sign out of all devices?')) return;
+    try {
+      await fetch(`${apiBase}/signout-all`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: user.email })});
+      localStorage.removeItem('planova_user');
+      window.location.href = 'index.html';
+    } catch (e) {
+      showToast('Signed out locally (server unavailable)');
+      localStorage.removeItem('planova_user');
+      window.location.href = 'index.html';
     }
-  };
+  });
 
-  /* PASSWORD MODAL */
-  const modal = document.getElementById("modal-bg");
+  // Activity log button
+  $('#activity-log-btn').addEventListener('click', () => {
+    // Scroll to activity
+    document.getElementById('activity-log').scrollIntoView({behavior:'smooth'});
+  });
 
-  document.getElementById("change-password").onclick = () => {
-    modal.style.display = "flex";
-  };
-
-  document.getElementById("close-modal").onclick = () => {
-    modal.style.display = "none";
-  };
-
-  document.getElementById("save-pass").onclick = async () => {
-    const oldPass = document.getElementById("old-pass").value;
-    const newPass = document.getElementById("new-pass").value;
-    const confirmPass = document.getElementById("confirm-pass").value;
-
-    if (!oldPass || !newPass || !confirmPass) {
-      alert("Please fill in all fields");
-      return;
+  // Export tickets
+  $('#export-tickets').addEventListener('click', async () => {
+    showToast('Exporting tickets…');
+    try {
+      const res = await fetch(`${apiBase}/export-tickets`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: user.email })});
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${user.email}_tickets.zip`; a.click(); URL.revokeObjectURL(url);
+        showToast('Tickets exported');
+        return;
+      }
+    } catch (e) {
+      console.warn('Export tickets failed', e);
     }
+    showToast('Export failed (server). Downloading local copy.');
+    // fallback: create local mock
+    const data = [{event:'Summer Fest', seat:'A12', code:'ABC123'}];
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${user.email}_tickets.json`; a.click(); URL.revokeObjectURL(url);
+  });
 
-    if (newPass !== confirmPass) {
-      alert("New passwords do not match");
-      return;
+  // Leave feedback
+  $('#leave-feedback').addEventListener('click', () => {
+    const feedback = prompt('Leave feedback for PLANOVA:');
+    if (!feedback) return;
+    showToast('Thanks for your feedback!');
+    // send to backend (best-effort)
+    fetch(`${apiBase}/feedback`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: user.email, feedback }) }).catch(()=>{});
+  });
+
+  // Gift ticket / refer friend / buy tickets (stubs)
+  $('#gift-ticket').addEventListener('click', () => {
+    const friend = prompt('Friend email to gift a ticket to:');
+    if (!friend) return;
+    showToast(`Gifted a ticket to ${friend} (demo)`);
+  });
+  $('#refer-friend').addEventListener('click', () => {
+    const code = Math.random().toString(36).slice(2,8).toUpperCase();
+    showToast(`Share this referral code: ${code}`);
+  });
+  $('#buy-tickets').addEventListener('click', () => {
+    window.location.href = 'checkout.html';
+  });
+
+  // Manage 2FA (UI only)
+  $('#manage-2fa').addEventListener('click', () => {
+    const enabled = confirm('Enable two-factor authentication (demo)? Click OK to enable.');
+    if (enabled) {
+      user.twofa = true; localStorage.setItem('planova_user', JSON.stringify(user));
+      showToast('2FA enabled (demo)');
+    } else {
+      user.twofa = false; localStorage.setItem('planova_user', JSON.stringify(user));
+      showToast('2FA disabled (demo)');
     }
+  });
 
-    const res = await fetch("http://127.0.0.1:5000/change-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: user.email,
-        old_password: oldPass,
-        new_password: newPass
-      })
+  // Sync to Google Calendar (stub)
+  $('#sync-calendar').addEventListener('click', async () => {
+    showToast('Attempting to sync to Google Calendar…');
+    try {
+      // This is a stub. Real implementation requires OAuth and server support.
+      await sleep(800);
+      showToast('Events synced to Google Calendar (demo)');
+    } catch (e) {
+      showToast('Calendar sync failed');
+    }
+  });
+
+  // View calendar (simple in-page calendar)
+  $('#view-calendar').addEventListener('click', () => {
+    // Build a simple calendar overlay
+    const cal = document.createElement('div');
+    cal.style.position='fixed'; cal.style.inset='40px'; cal.style.background='var(--panel)'; cal.style.border='var(--card-border)'; cal.style.borderRadius='12px'; cal.style.padding='20px'; cal.style.zIndex=99999; cal.id='__temp_calendar';
+    cal.innerHTML = `<h3>Your calendar (demo)</h3><p class="small-muted">This is a lightweight calendar view of your events.</p><div id="__cal_list" style="display:flex;flex-direction:column;gap:8px;margin-top:12px"></div><div style="margin-top:12px"><button class="btn btn-ghost" id="close-cal">Close</button></div>`;
+    document.body.appendChild(cal);
+    const list = document.getElementById('__cal_list');
+    // populate with upcoming events
+    const items = Array.from(document.querySelectorAll('#upcoming-events .event-item'));
+    if (!items.length) list.innerHTML = '<p class="small-muted">No events to show</p>';
+    items.forEach(it => {
+      const title = it.querySelector('.event-meta h4').textContent;
+      const when = it.querySelector('.event-meta p').textContent;
+      const row = document.createElement('div'); row.className='timeline-item'; row.innerHTML = `<div>${title}</div><small>${when}</small>`;
+      list.appendChild(row);
     });
+    document.getElementById('close-cal').addEventListener('click', ()=>{ document.getElementById('__temp_calendar')?.remove(); });
+  });
 
-    const data = await res.json();
-
-    if (!data.success) {
-      alert(data.message);
-      return;
+  // Activity: show toast
+  function showToast(msg, timeout=2200) {
+    let t = document.getElementById('__toast');
+    if (!t) {
+      t = document.createElement('div'); t.id='__toast';
+      t.style.position='fixed'; t.style.right='20px'; t.style.bottom='20px'; t.style.background='rgba(0,0,0,0.7)'; t.style.padding='12px 16px'; t.style.borderRadius='10px'; t.style.border='1px solid rgba(255,255,255,0.04)'; t.style.zIndex=99999; document.body.appendChild(t);
     }
+    t.textContent = msg; t.style.opacity = '1';
+    setTimeout(()=>{ t.style.opacity = '0'; }, timeout);
+  }
 
-    alert("Password updated successfully");
-    modal.style.display = "none";
-  };
+  // Simple keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'k') { e.preventDefault(); $('#global-search').focus(); }
+    if (e.key === 'Escape') closeAllModals();
+    if (e.ctrlKey && e.key === 'l') { e.preventDefault(); $('#logout-btn').click(); }
+  });
 
-  /* DELETE ACCOUNT MODAL */
-  const deleteModal = document.getElementById("delete-modal");
-
-  document.getElementById("delete-account").onclick = () => {
-    deleteModal.style.display = "flex";
-  };
-
-  document.getElementById("cancel-delete").onclick = () => {
-    deleteModal.style.display = "none";
-  };
-
-  document.getElementById("confirm-delete").onclick = async () => {
-    const password = document.getElementById("delete-pass").value;
-
-    if (!password) {
-      alert("Please enter your password");
-      return;
-    }
-
-    const res = await fetch("http://127.0.0.1:5000/delete-account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: user.email,
-        password: password
-      })
+  // Search filter for upcoming events
+  $('#filter-upcoming').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    $$('#upcoming-events .event-item').forEach(it => {
+      const txt = it.textContent.toLowerCase();
+      it.style.display = txt.includes(q) ? '' : 'none';
     });
+  });
 
-    const data = await res.json();
+  // Sort upcoming events
+  $('#sort-upcoming').addEventListener('change', (e) => {
+    const mode = e.target.value;
+    const container = $('#upcoming-events');
+    const items = Array.from(container.querySelectorAll('.event-item'));
+    items.sort((a,b) => {
+      if (mode === 'title') {
+        return a.querySelector('h4').textContent.localeCompare(b.querySelector('h4').textContent);
+      } else {
+        // date sort
+        const da = new Date(a.querySelector('.event-meta p').textContent.split(' • ')[0]).getTime() || 0;
+        const db = new Date(b.querySelector('.event-meta p').textContent.split(' • ')[0]).getTime() || 0;
+        return da - db;
+      }
+    });
+    container.innerHTML = ''; items.forEach(i => container.appendChild(i));
+  });
 
-    if (!data.success) {
-      alert(data.message);
-      return;
+  // Delete account button in danger zone (preserve original)
+  // Already wired to modal confirm-delete above
+
+  // Activity: periodically refresh events & tickets
+  setInterval(() => {
+    loadEvents();
+    loadTickets();
+    loadActivity();
+  }, 1000 * 60 * 2); // every 2 minutes
+
+  // Initial load
+  loadEvents();
+  loadTickets();
+
+
+
+  // Preserve original change-password flow (IDs kept)
+  // Already wired above to modal-bg-password and save-pass
+
+  // Preserve original delete-account flow (IDs kept)
+  // Already wired above to delete-modal and confirm-delete
+
+  // Preserve original logout behavior (IDs kept)
+  // Already wired above to logout-btn
+
+  // Keep auth.js loaded (already included). If auth.js defines functions, they remain available.
+
+  // Robust fetch wrapper with timeout
+  async function fetchWithTimeout(url, opts={}, timeout=7000) {
+    const controller = new AbortController();
+    const id = setTimeout(()=>controller.abort(), timeout);
+    try {
+      const res = await fetch(url, {...opts, signal: controller.signal});
+      clearTimeout(id);
+      return res;
+    } catch (e) {
+      clearTimeout(id);
+      throw e;
     }
+  }
 
-    localStorage.removeItem("planova_user");
-    alert("Your account has been deleted");
-    window.location.href = "index.html";
+  // Sign-out helper (preserve)
+  function signOutLocal() {
+    localStorage.removeItem('planova_user');
+    window.location.href = 'index.html';
+  }
+
+  // Keyboard accessible focus for event items
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.classList.contains('event-item')) {
+      document.activeElement.querySelector('button')?.click();
+    }
+  });
+
+  // Ensure original elements with IDs still exist and behave as before
+  // (This block intentionally left to preserve compatibility with earlier code)
+  (function preserveOriginalBindings(){
+    // original bindings were: edit-profile prompt, change-password modal, delete-account modal, logout
+    // Already preserved above.
+  })();
+
+  // Final safety: if user object changes externally, keep UI in sync
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'planova_user') {
+      user = JSON.parse(localStorage.getItem('planova_user') || '{}');
+      initProfileUI();
+    }
+  });
+
+  // Expose some debug helpers on window for development
+  window.__planova = {
+    user,
+    reload: () => { loadEvents(); loadTickets(); loadActivity(); initProfileUI(); },
+    openModal,
+    closeModal,
+    generateSimpleQR
   };
-</script>
 
+  </script>
 </body>
 </html>
