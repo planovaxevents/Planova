@@ -8,6 +8,7 @@ import random
 import time
 import smtplib
 from email.mime.text import MIMEText
+import threading  # ✅ ADDED
 
 app = Flask(__name__)
 
@@ -41,68 +42,30 @@ def send_email(to_email, code):
     html = f"""
     <html>
     <body style="margin:0;padding:0;background:#0b0b0b;font-family:Arial,sans-serif;">
-
       <div style="max-width:600px;margin:0 auto;background:#111;border-radius:12px;overflow:hidden;border:1px solid #1f1f1f;">
-
-        <!-- HEADER -->
         <div style="padding:30px;text-align:center;background:linear-gradient(135deg,#00ff88,#00c77a);">
-          <h1 style="margin:0;color:#0b0b0b;font-size:26px;letter-spacing:2px;">
-            PLANOVA
-          </h1>
-          <p style="margin:6px 0 0;color:#0b0b0b;font-size:13px;">
-            Secure Verification System
-          </p>
+          <h1 style="margin:0;color:#0b0b0b;font-size:26px;letter-spacing:2px;">PLANOVA</h1>
+          <p style="margin:6px 0 0;color:#0b0b0b;font-size:13px;">Secure Verification System</p>
         </div>
 
-        <!-- BODY -->
         <div style="padding:35px;color:#ffffff;text-align:center;">
+          <h2 style="margin-bottom:10px;font-size:22px;">Verify your email</h2>
 
-          <h2 style="margin-bottom:10px;font-size:22px;">
-            Verify your email
-          </h2>
-
-          <p style="color:#bbb;font-size:14px;line-height:1.5;">
-            We received a request to create a PLANOVA account using this email address.
+          <p style="color:#bbb;font-size:14px;">
             Use the verification code below to continue.
           </p>
 
-          <!-- CODE BOX -->
-          <div style="
-            margin:25px auto;
-            padding:20px;
-            width:200px;
-            font-size:28px;
-            letter-spacing:6px;
-            font-weight:bold;
-            background:#000;
-            border:1px solid #00ff88;
-            border-radius:10px;
-            color:#00ff88;
-          ">
+          <div style="margin:25px auto;padding:20px;width:200px;font-size:28px;letter-spacing:6px;font-weight:bold;background:#000;border:1px solid #00ff88;border-radius:10px;color:#00ff88;">
             {code}
           </div>
 
-          <p style="color:#888;font-size:12px;margin-top:10px;">
-            This code expires in <b>5 minutes</b>
-          </p>
-
-        
-
-          <!-- SECURITY NOTE -->
-          <div style="margin-top:30px;font-size:12px;color:#666;line-height:1.5;">
-            If you did not request this, you can safely ignore this email.<br>
-            Your account remains secure.
-          </div>
-
+          <p style="color:#888;font-size:12px;">Expires in 5 minutes</p>
         </div>
 
-        <!-- FOOTER -->
         <div style="padding:20px;text-align:center;background:#0a0a0a;color:#555;font-size:11px;">
-          © {time.strftime("%Y")} PLANOVA • All rights reserved
+          © {time.strftime("%Y")} PLANOVA
         </div>
-
       </div>
-
     </body>
     </html>
     """
@@ -112,9 +75,19 @@ def send_email(to_email, code):
     msg["From"] = EMAIL_ADDRESS
     msg["To"] = to_email
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+    # ✅ FIX: timeout added
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         server.send_message(msg)
+
+
+# ✅ NEW: background sender (prevents timeout crash)
+def send_email_async(email, code):
+    try:
+        send_email(email, code)
+    except Exception as e:
+        print("EMAIL ERROR:", e)
+
 
 # -------------------------------------------------
 # CLEANUP EXPIRED OTPs
@@ -145,7 +118,7 @@ def init_db():
 init_db()
 
 # -------------------------------------------------
-# SEND CODE
+# SEND CODE (FIXED)
 # -------------------------------------------------
 @app.route("/send_code", methods=["POST"])
 def send_code():
@@ -165,12 +138,11 @@ def send_code():
         "expires": expires
     }
 
-    try:
-        send_email(email, code)
-        return jsonify({"success": True, "message": "Code sent"})
-    except Exception as e:
-        print("EMAIL ERROR:", e)
-        return jsonify({"success": False, "message": "Email failed"}), 500
+    # ✅ NON-BLOCKING EMAIL SEND
+    threading.Thread(target=send_email_async, args=(email, code)).start()
+
+    return jsonify({"success": True, "message": "Code sent"})
+
 
 # -------------------------------------------------
 # VERIFY CODE
@@ -198,7 +170,7 @@ def verify_code():
     return jsonify({"success": True, "message": "Verified"})
 
 # -------------------------------------------------
-# REGISTER (OTP REQUIRED)
+# REGISTER (UNCHANGED)
 # -------------------------------------------------
 @app.route("/register", methods=["POST"])
 def register():
